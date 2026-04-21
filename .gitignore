@@ -49,6 +49,7 @@ models/
 data_raw/
 data_cleaned/
 data_balanced/
+external_test/
 
 # =========================
 # Saved Frames / Debug
@@ -69,7 +70,7 @@ saved_frames/
 # System / Temp
 # =========================
 *.tmp
-*.swp.idea/
+*.swp
 __pycache__/
 *.pyc
 .idea/
