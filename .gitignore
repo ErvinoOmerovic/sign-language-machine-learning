@@ -1,0 +1,74 @@
+# =========================
+# Python
+# =========================
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+build/
+dist/
+
+# Virtual Environments
+.venv/
+venv/
+env/
+ENV/
+conda-meta/
+.venv311/*
+
+
+# =========================
+# VS Code
+# =========================
+.vscode/
+
+# =========================
+# Mac
+# =========================
+.DS_Store
+
+# =========================
+# Logs & Outputs
+# =========================
+logs/
+*.log
+
+# =========================
+# Models (sehr groß)
+# =========================
+models/
+*.h5
+*.keras
+
+# =========================
+# Datasets (NICHT committen!)
+# =========================
+data_raw/
+data_cleaned/
+data_balanced/
+
+# =========================
+# Saved Frames / Debug
+# =========================
+saved_frames/
+
+# =========================
+# Numpy / Arrays
+# =========================
+*.npy
+
+# =========================
+# Jupyter (falls genutzt)
+# =========================
+.ipynb_checkpoints/
+
+# =========================
+# System / Temp
+# =========================
+*.tmp
+*.swp.idea/
+__pycache__/
+*.pyc
