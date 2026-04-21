@@ -72,3 +72,4 @@ saved_frames/
 *.swp.idea/
 __pycache__/
 *.pyc
+.idea/
