@@ -38,6 +38,12 @@ project/
 ├── external_test/       # Externer Testdatensatz (nicht im Repo)
 ├── models/              # Gespeicherte Modelle (nicht im Repo)
 ├── logs/                # Trainingslogs
+│   ├── classification_reports/  # Classification Reports
+│   ├── confusion_matrices/      # Confusion Matrices
+│   ├── training_metrics/        # Epoch-Metriken (CSV)
+│   ├── training_curves/         # Trainingskurven (PNG)
+│   ├── data_analysis/           # Datenanalyse (Plots)
+│   └── cleaning_logs/           # Cleaning-Logs (TXT)
 ├── preprocess.py
 ├── train_simple.py
 ├── train.py
@@ -181,6 +187,28 @@ Diese sind in `.gitignore` definiert.
 
 ---
 
+## 🧹 Datenbereinigung
+
+Bereinigt Rohdaten aus `data_raw/` und erstellt automatisch eine Datenverteilungs-Analyse:
+
+```bash
+python clean_dataset.py
+```
+
+**Features:**
+- Duplikat-Erkennung
+- Unschärfe-Filterung
+- Kaputte Bilder entfernen
+- Extrem schlechte Bilder filtern
+- **Automatische Datenanalyse** mit Diagrammen und Statistiken
+
+**Output:**
+- Bereinigte Bilder in `data_cleaned/`
+- Analyse-Diagramm: `logs/data_analysis/data_distribution_TIMESTAMP.png`
+- Analyse-Tabelle: `logs/data_analysis/data_distribution_TIMESTAMP.txt`
+
+---
+
 ## 🚀 Zukunft / Erweiterungen
 
 - Unterstützung für das komplette Alphabet
@@ -188,4 +216,3 @@ Diese sind in `.gitignore` definiert.
 - Deployment als Web-App (Flask / FastAPI)
 - Mobile Integration
 
----

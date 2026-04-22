@@ -5,7 +5,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 
 ALLOWED_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.bmp', '.tiff', '.tif'}
-DEFAULT_OUTPUT_IMAGE = Path('logs/data_distribution.png')
+DEFAULT_OUTPUT_IMAGE = Path('logs/data_analysis/data_distribution.png')
 
 
 def is_image_file(path: Path) -> bool:

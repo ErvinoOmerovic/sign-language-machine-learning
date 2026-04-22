@@ -92,17 +92,15 @@ def train_model(data_dir, model_save_path=None):
     X, y = load_data(data_dir)
     print(f"Geladen: {len(X)} Bilder")
     
-    # Split
-    X_train, X_temp, y_train, y_temp = train_test_split(X, y, test_size=0.30, random_state=42)
-    X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=0.50, random_state=42)
-    
+    # Split: nur Train + Validation (80/20)
+    X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.20, random_state=42)
+
     # Normalisieren
     X_train = X_train.astype('float32') / 255.0
     X_val = X_val.astype('float32') / 255.0
-    X_test = X_test.astype('float32') / 255.0
-    
-    print(f"Train: {len(X_train)}, Val: {len(X_val)}, Test: {len(X_test)}\n")
-    
+
+    print(f"Train: {len(X_train)}, Val: {len(X_val)}\n")
+
     # Modell bauen
     model = build_model()
     model.compile(optimizer=Adam(learning_rate=0.001), 
@@ -116,8 +114,8 @@ def train_model(data_dir, model_save_path=None):
     early_stop = EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True)
     checkpoint = ModelCheckpoint(model_save_path, monitor='val_accuracy', save_best_only=True)
     lr_scheduler = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=3)
-    csv_logger = CSVLogger(f'logs/epoch_metrics_{timestamp}.csv')
-    
+    csv_logger = CSVLogger(f'logs/training_metrics/epoch_metrics_{timestamp}.csv')
+
     # Training mit verbose=1 für Live-Output
     print("=== Training startet ===\n")
     history = model.fit(
@@ -154,68 +152,39 @@ def train_model(data_dir, model_save_path=None):
     plt.grid()
     
     plt.tight_layout()
-    plt.savefig(f'logs/training_curves_{timestamp}.png', dpi=150)
+    plt.savefig(f'logs/training_curves/training_curves_{timestamp}.png', dpi=150)
     plt.close()
-    print(f"✓ Trainingskurven gespeichert: logs/training_curves_{timestamp}.png")
-    print(f"✓ Epoch-Metriken gespeichert: logs/epoch_metrics_{timestamp}.csv")
-    
-    # Automatische Evaluation auf Testdaten
-    print("\n=== Evaluation auf Testdaten ===")
-    evaluate_on_test_data(model, X_test, y_test, timestamp)
-    
-    return model, history, X_test, y_test
+    print(f"✓ Trainingskurven gespeichert: logs/training_curves/training_curves_{timestamp}.png")
+    print(f"✓ Epoch-Metriken gespeichert: logs/training_metrics/epoch_metrics_{timestamp}.csv")
 
-def evaluate_on_test_data(model, X_test, y_test, timestamp):
-    """
-    Evaluiert das Modell auf Testdaten und speichert Confusion Matrix + Classification Report.
-    """
-    # Predictions
-    y_pred = model.predict(X_test, verbose=0)
-    y_pred_classes = np.argmax(y_pred, axis=1)
-    
-    # Test Accuracy
-    test_acc = np.mean(y_pred_classes == y_test)
-    print(f"Test Accuracy: {test_acc:.4f}")
-    
-    # Confusion Matrix
-    cm = confusion_matrix(y_test, y_pred_classes)
-    
-    # Plot Confusion Matrix mit matplotlib
-    fig, ax = plt.subplots(figsize=(8, 6))
-    im = ax.imshow(cm, cmap='Blues')
-    
-    # Labels
-    ax.set_xticks(np.arange(len(CLASSES)))
-    ax.set_yticks(np.arange(len(CLASSES)))
-    ax.set_xticklabels(CLASSES)
-    ax.set_yticklabels(CLASSES)
-    
-    # Text annotations
-    for i in range(len(CLASSES)):
-        for j in range(len(CLASSES)):
-            text = ax.text(j, i, cm[i, j], ha="center", va="center", color="white" if cm[i, j] > cm.max() / 2 else "black")
-    
-    ax.set_title('Confusion Matrix (Test Set)')
-    ax.set_xlabel('Predicted')
-    ax.set_ylabel('True')
-    plt.colorbar(im, ax=ax)
-    plt.tight_layout()
-    plt.savefig(f'logs/confusion_matrix_{timestamp}.png', dpi=150)
-    plt.close()
-    print(f"✓ Confusion Matrix gespeichert: logs/confusion_matrix_{timestamp}.png")
-    
-    # Classification Report
-    report = classification_report(y_test, y_pred_classes, target_names=CLASSES)
-    with open(f'logs/classification_report_{timestamp}.txt', 'w') as f:
-        f.write(f"Sign Language Recognition - Classification Report\n")
-        f.write(f"Timestamp: {timestamp}\n")
-        f.write(f"Test Accuracy: {test_acc:.4f}\n")
-        f.write("=" * 60 + "\n\n")
-        f.write(report)
-    print(f"✓ Classification Report gespeichert: logs/classification_report_{timestamp}.txt")
+    print("\n" + "="*60)
+    print("✅ Training abgeschlossen!")
+    print("="*60)
+    print(f"Modell gespeichert: {model_save_path}")
+    print("Für FINALE EVALUATION (mit external_test) verwende:")
+    print(f"  python evaluate.py --model {model_save_path}")
+    print("="*60)
+
+    return model, history, model_save_path
+
+
 
 if __name__ == "__main__":
-    data_dir = 'data_raw'  # ursprünglicher Datensatz mit allen Bildern
-    model, history, X_test, y_test = train_model(data_dir)
-    print("\n=== Training abgeschlossen ===")
-    print("Alle Ergebnisse wurden mit Zeitstempel gespeichert.")
+    import subprocess
+
+    data_dir = 'data_cleaned'  # Bereinigte Daten verwenden
+    model, history, model_save_path = train_model(data_dir)
+
+    print("\n" + "="*60)
+    print("🚀 Starte automatische finale Evaluation...")
+    print("="*60)
+
+    # Automatisch evaluate.py ausführen
+    try:
+        subprocess.run(
+            ['python', 'evaluate.py', '--model', model_save_path],
+            check=True
+        )
+    except subprocess.CalledProcessError as e:
+        print(f"⚠️ Fehler bei der automatischen Evaluation: {e}")
+        print(f"Führe manuell aus: python evaluate.py --model {model_save_path}")

@@ -2,10 +2,13 @@ import argparse
 import shutil
 from datetime import datetime
 from pathlib import Path
+from collections import Counter
 
 import cv2
 import numpy as np
 from PIL import Image, UnidentifiedImageError
+
+import matplotlib.pyplot as plt
 
 try:
     import mediapipe as mp
@@ -24,11 +27,16 @@ except Exception as e:
 
 TARGET_SIZE = (224, 224)
 ALLOWED_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.bmp', '.tiff', '.tif'}
-REMOVED_LOG_PATH = Path('logs/removed_images.txt')
-METHOD_LOG_PATH = Path('logs/processing_methods.txt')
 DEFAULT_BLUR_THRESHOLD = 40.0
 DEFAULT_HAND_PADDING = 0.2
 DEFAULT_FALLBACK_CROP_RATIO = 0.9
+DEFAULT_EXTREME_LOW_CONTENT_THRESHOLD = 0.95  # 95% uniforme Farbe = sehr schlecht
+
+# Globale Variablen für aktuellen Run (werden in clean_dataset gesetzt)
+RUN_TIMESTAMP = None
+REMOVED_LOG_PATH = None
+METHOD_LOG_PATH = None
+SUMMARY_LOG_PATH = None
 
 
 def is_image_file(path: Path) -> bool:
@@ -86,6 +94,9 @@ def fallback_crop(image: Image.Image) -> Image.Image:
 
 
 def log_method(src_path: Path, method: str) -> None:
+    global METHOD_LOG_PATH
+    if METHOD_LOG_PATH is None:
+        return
     METHOD_LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
     timestamp = datetime.now().isoformat(timespec='seconds')
     with METHOD_LOG_PATH.open('a', encoding='utf-8') as file:
@@ -129,6 +140,9 @@ def crop_hand_region(image: Image.Image, bbox: tuple[int, int, int, int]) -> Ima
 
 
 def log_removed(src_path: Path, reason: str) -> None:
+    global REMOVED_LOG_PATH
+    if REMOVED_LOG_PATH is None:
+        return
     REMOVED_LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
     timestamp = datetime.now().isoformat(timespec='seconds')
     with REMOVED_LOG_PATH.open('a', encoding='utf-8') as file:
@@ -169,6 +183,13 @@ def clean_image_file(
         print(f'Übersprungen (unscharf): {src_path}')
         return False
 
+    # Überprüfung auf extrem schlechte Bilder (z.B. 95% einheitliche Farbe)
+    image_array = np.asarray(image)
+    if np.std(image_array) < DEFAULT_EXTREME_LOW_CONTENT_THRESHOLD:
+        log_removed(src_path, 'extrem niedriger Inhalt')
+        print(f'Übersprungen (extrem niedriger Inhalt): {src_path}')
+        return False
+
     if duplicate_hashes is not None:
         image_hash = compute_image_hash(image)
         if image_hash in duplicate_hashes:
@@ -197,6 +218,15 @@ def clean_dataset(
     normalize: bool,
     deduplicate: bool,
 ) -> None:
+    global RUN_TIMESTAMP, REMOVED_LOG_PATH, METHOD_LOG_PATH, SUMMARY_LOG_PATH
+    
+    # Generiere Timestamp für diesen Run
+    RUN_TIMESTAMP = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+    run_log_dir = Path(f'logs/cleaning_logs/{RUN_TIMESTAMP}')
+    REMOVED_LOG_PATH = run_log_dir / 'removed_images.txt'
+    METHOD_LOG_PATH = run_log_dir / 'processing_methods.txt'
+    SUMMARY_LOG_PATH = run_log_dir / 'summary.txt'
+    
     if not source_dir.exists():
         raise FileNotFoundError(f'Quelle nicht gefunden: {source_dir}')
 
@@ -209,8 +239,7 @@ def clean_dataset(
     if dest_dir.exists():
         shutil.rmtree(dest_dir)
     dest_dir.mkdir(parents=True, exist_ok=True)
-    REMOVED_LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
-    METHOD_LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
+    run_log_dir.mkdir(parents=True, exist_ok=True)
     class_dirs = [entry for entry in source_dir.iterdir() if entry.is_dir()]
 
     total_processed = 0
@@ -250,6 +279,219 @@ def clean_dataset(
         print('Hinweis: Normalisierte Arrays wurden zusätzlich als .npy-Dateien gespeichert.')
     print(f'Entfernte Dateien protokolliert in {REMOVED_LOG_PATH}')
     print(f'Crop-Methode pro Bild protokolliert in {METHOD_LOG_PATH}')
+
+    # Klassenbalance-Analyse
+    print("\n" + "="*60)
+    print("📊 Klassenbalance nach Reinigung:")
+    print("="*60)
+    class_counts = {}
+    for class_dir in sorted(dest_dir.iterdir()):
+        if class_dir.is_dir():
+            count = len([f for f in class_dir.iterdir() if f.is_file() and f.suffix.lower() in {'.png', '.jpg', '.jpeg', '.bmp'}])
+            class_counts[class_dir.name] = count
+            print(f"  {class_dir.name}: {count} Bilder")
+
+    if class_counts:
+        min_count = min(class_counts.values())
+        max_count = max(class_counts.values())
+        avg_count = sum(class_counts.values()) / len(class_counts)
+        print(f"\n  Min: {min_count}, Max: {max_count}, Durchschnitt: {avg_count:.1f}")
+        balance_ratio = min_count / max_count if max_count > 0 else 0
+        print(f"  Balance-Ratio: {balance_ratio:.2%}")
+    print("="*60)
+
+    # Automatische Datenverteilungs-Analyse mit Timestamp
+    print("\n📈 Erstelle Datenverteilungs-Analyse...")
+    create_data_distribution_analysis(dest_dir)
+    
+    # Erstelle Summary
+    print("\n📝 Erstelle Cleaning-Zusammenfassung...")
+    create_cleaning_summary(
+        source_dir, dest_dir, min_size, blur_threshold, normalize, deduplicate,
+        total_processed, total_removed, total_saved
+    )
+    print(f"✓ Zusammenfassung gespeichert: {SUMMARY_LOG_PATH}")
+    
+    # Finale Info
+    print(f"\n✓ Alle Logs gespeichert in: {run_log_dir}")
+
+
+def create_cleaning_summary(
+    source_dir: Path, dest_dir: Path, min_size: int, blur_threshold: float,
+    normalize: bool, deduplicate: bool,
+    total_processed: int, total_removed: int, total_saved: int
+) -> None:
+    """
+    Erstellt eine Zusammenfassung des Cleaning-Runs mit allen Parametern.
+    """
+    global SUMMARY_LOG_PATH
+    if SUMMARY_LOG_PATH is None:
+        return
+    
+    with SUMMARY_LOG_PATH.open('w', encoding='utf-8') as f:
+        f.write("="*80 + "\n")
+        f.write("CLEANING SESSION SUMMARY\n")
+        f.write("="*80 + "\n\n")
+        
+        f.write(f"Timestamp: {RUN_TIMESTAMP}\n\n")
+        
+        f.write("KONFIGURATION:\n")
+        f.write("-" * 40 + "\n")
+        f.write(f"Source Directory:      {source_dir.resolve()}\n")
+        f.write(f"Destination Directory: {dest_dir.resolve()}\n")
+        f.write(f"Min Size:              {min_size} Pixel\n")
+        f.write(f"Blur Threshold:        {blur_threshold}\n")
+        f.write(f"Normalization:         {'Ja' if normalize else 'Nein'}\n")
+        f.write(f"Deduplication:         {'Ja (aktiv)' if deduplicate else 'Nein (deaktiviert)'}\n\n")
+        
+        f.write("ERGEBNISSE:\n")
+        f.write("-" * 40 + "\n")
+        f.write(f"Gesamt verarbeitet:    {total_processed}\n")
+        f.write(f"Entfernt:              {total_removed}\n")
+        f.write(f"Gespeichert:           {total_saved}\n")
+        f.write(f"Erfolgsquote:          {(total_saved/total_processed*100):.1f}%\n\n")
+        
+        f.write("LOGS:\n")
+        f.write("-" * 40 + "\n")
+        f.write(f"Removed Images:        removed_images.txt\n")
+        f.write(f"Processing Methods:    processing_methods.txt\n\n")
+        
+        f.write("="*80 + "\n")
+        f.write("Ende des Summaries\n")
+        f.write("="*80 + "\n")
+
+
+def create_data_distribution_analysis(data_dir: Path) -> None:
+    """
+    Erstellt eine vollständige Datenverteilungs-Analyse mit Timestamp.
+    Speichert sowohl Diagramm als auch Tabelle.
+    """
+    from utils import get_timestamp
+    timestamp = get_timestamp()
+
+    # Zähle Bilder pro Klasse
+    counts = Counter()
+    for class_dir in sorted(data_dir.iterdir()):
+        if not class_dir.is_dir():
+            continue
+        total = 0
+        for path in class_dir.iterdir():
+            if path.is_file() and is_image_file(path):
+                total += 1
+        counts[class_dir.name] = total
+
+    if not counts:
+        print("Keine Bilder gefunden für Analyse.")
+        return
+
+    # Erstelle Diagramm
+    plot_data_distribution(counts, timestamp)
+
+    # Erstelle Text-Tabelle
+    save_data_distribution_table(counts, timestamp)
+
+    print(f"✓ Datenverteilungs-Analyse gespeichert:")
+    print(f"  Diagramm: logs/data_analysis/data_distribution_{timestamp}.png")
+    print(f"  Tabelle:  logs/data_analysis/data_distribution_{timestamp}.txt")
+
+
+def plot_data_distribution(counts: Counter[str], timestamp: str) -> None:
+    """
+    Erstellt und speichert ein Balkendiagramm der Datenverteilung.
+    """
+    output_path = Path(f'logs/data_analysis/data_distribution_{timestamp}.png')
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    classes = list(counts.keys())
+    values = [counts[c] for c in classes]
+
+    fig, ax = plt.subplots(figsize=(12, 6))
+    bars = ax.bar(classes, values, color='tab:blue', alpha=0.8)
+
+    ax.set_title(f'Bildverteilung pro Klasse (nach Cleaning - {timestamp})', fontsize=14, fontweight='bold')
+    ax.set_xlabel('Klasse', fontsize=12)
+    ax.set_ylabel('Anzahl Bilder', fontsize=12)
+    ax.set_ylim(0, max(values) * 1.15 if values else 1)
+    ax.grid(True, axis='y', linestyle='--', alpha=0.5)
+
+    # Werte über den Balken anzeigen
+    for bar, value in zip(bars, values):
+        ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + max(values) * 0.01,
+                f'{value}', ha='center', va='bottom', fontsize=10, fontweight='bold')
+
+    # Statistiken als Text hinzufügen
+    if values:
+        min_count = min(values)
+        max_count = max(values)
+        avg_count = sum(values) / len(values)
+        total_count = sum(values)
+
+        stats_text = f'Total: {total_count} | Min: {min_count} | Max: {max_count} | Avg: {avg_count:.1f}'
+        ax.text(0.02, 0.98, stats_text, transform=ax.transAxes, fontsize=10,
+                verticalalignment='top', bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.8))
+
+    fig.tight_layout()
+    fig.savefig(output_path, dpi=150, bbox_inches='tight')
+    plt.close(fig)
+
+
+def save_data_distribution_table(counts: Counter[str], timestamp: str) -> None:
+    """
+    Speichert eine detaillierte Text-Tabelle der Datenverteilung.
+    """
+    output_path = Path(f'logs/data_analysis/data_distribution_{timestamp}.txt')
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    with output_path.open('w', encoding='utf-8') as f:
+        f.write("="*80 + "\n")
+        f.write(f"DATA DISTRIBUTION ANALYSIS - {timestamp}\n")
+        f.write("="*80 + "\n\n")
+
+        f.write("Klasse | Anzahl Bilder\n")
+        f.write("-------|--------------\n")
+
+        total_images = 0
+        for cls, count in sorted(counts.items()):
+            f.write(f"{cls:6} | {count:12}\n")
+            total_images += count
+
+        f.write("-------|--------------\n")
+        f.write(f"Total  | {total_images:12}\n\n")
+
+        # Statistiken
+        if counts:
+            values = list(counts.values())
+            min_count = min(values)
+            max_count = max(values)
+            avg_count = sum(values) / len(values)
+            balance_ratio = min_count / max_count if max_count > 0 else 0
+
+            f.write("STATISTIKEN:\n")
+            f.write("-" * 40 + "\n")
+            f.write(f"Gesamtanzahl Bilder: {total_images}\n")
+            f.write(f"Klassen: {len(counts)}\n")
+            f.write(f"Minimum pro Klasse: {min_count}\n")
+            f.write(f"Maximum pro Klasse: {max_count}\n")
+            f.write(f"Durchschnitt pro Klasse: {avg_count:.1f}\n")
+            f.write(f"Balance-Ratio: {balance_ratio:.2%}\n\n")
+
+            # Balance-Bewertung
+            if min_count == 0:
+                balance_status = "KRITISCH: Mindestens eine Klasse hat 0 Bilder!"
+            elif balance_ratio >= 0.8:
+                balance_status = "SEHR GUT: Ausgeglichene Verteilung"
+            elif balance_ratio >= 0.6:
+                balance_status = "GUT: Leichte Ungleichheit"
+            elif balance_ratio >= 0.4:
+                balance_status = "MITTEL: Moderate Ungleichheit"
+            else:
+                balance_status = "SCHLECHT: Starke Ungleichheit"
+
+            f.write(f"Balance-Status: {balance_status}\n")
+
+        f.write("\n" + "="*80 + "\n")
+        f.write("Erstellt durch clean_dataset.py\n")
+        f.write("="*80 + "\n")
 
 
 def parse_args() -> argparse.Namespace:
