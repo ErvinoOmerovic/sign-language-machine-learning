@@ -50,6 +50,7 @@ data_raw/
 data_cleaned/
 data_balanced/
 external_test/
+data_downloads/
 
 # =========================
 # Saved Frames / Debug

@@ -35,11 +35,23 @@ Diese Bereinigung verbessert die Modellleistung signifikant und reduziert Overfi
 
 ## c) Datenbasis und Datenmanagement
 
-### Beschreibung des Datensatzes
-Das Projekt nutzt mehrere Datensätze mit insgesamt 8 Klassen (A, B, C, L, V, W, O, Y):
-- **Datensatz 1:** Kaggle ASL Alphabet Dataset (~450-550 Bildern pro Klasse)
-- **Datensatz 2:** Zenodo ASL Dataset (~450-550 Bilder pro Klasse + 75 Bilder als separates externes Test-Set in `external_test/dataset2/`)
-- **Datensatz 3:** Zusätzlicher Dataset (~900 Bilder pro Klasse + 100 Bilder als separates externes Test-Set in `external_test/dataset3/`)
+## 📊 Verwendete Datensätze
+
+Dieses Projekt nutzt mehrere Datensätze mit insgesamt 8 Klassen (A, B, C, L, V, W, O, Y):
+
+- **Datensatz 1 (Kaggle):**  
+  [ASL Alphabet Dataset](https://www.kaggle.com/datasets/debashishsau/aslamerican-sign-language-aplhabet-dataset)  
+  → ca. 450–550 Bilder pro Klasse
+
+- **Datensatz 2 (Zenodo):**  
+  [ASL Dataset](https://zenodo.org/records/14635573)  
+  → ca. 450–550 Bilder pro Klasse  
+  → zusätzlich: 75 Bilder als separates externes Test-Set (`external_test/dataset2/`)
+
+- **Datensatz 3 (Kaggle - Synthetic):**  
+  [Synthetic ASL Alphabet Dataset](https://www.kaggle.com/datasets/lexset/synthetic-asl-alphabet)  
+  → ca. 900 Bilder pro Klasse  
+  → zusätzlich: 100 Bilder als separates externes Test-Set (`external_test/dataset3/`)
 
 **Aktuelle Verteilung in data_raw (kombiniert aus allen Datensätzen):**
 - Durchschnitt pro Klasse: ~1769 Bilder

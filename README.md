@@ -89,19 +89,116 @@ Für das Training und die Evaluation des Modells werden externe Datensätze verw
 
 ## 📁 Verwendung im Projekt
 
-Nach dem Download:
+Die Datensätze werden **nicht automatisch** geladen. Für den manuellen Import gibt es das Skript:
 
-1. Entpacke die Datensätze
-2. Lege die Bilder in folgende Struktur:
+```bash
+python setup_data.py
+```
 
-### Erwartete Struktur
+Das Skript:
+- lädt die definierten Kaggle- und Zenodo-Datensätze manuell herunter
+- entpackt die Archive lokal
+- übernimmt nur die Klassen `A, B, C, L, O, V, W, Y`
+- schreibt Trainingsdaten nach `data_raw/`
+- schreibt externe Testdaten nach `external_test/dataset2/` und `external_test/dataset3/`
+- überspringt bereits importierte Daten standardmäßig
+- lädt mit `--force` die betreffenden Datensätze neu
+
+### Manuelle Nutzung
+
+Alle Datensätze:
+
+```bash
+python setup_data.py
+```
+
+Nur ausgewählte Datensätze:
+
+```bash
+python setup_data.py --datasets kaggle_asl_2 zenodo_asl
+```
+
+Nur prüfen, ohne Dateien zu ändern:
+
+```bash
+python setup_data.py --dry-run
+```
+
+Erneut herunterladen und bereits importierte Dateien dieses Skripts ersetzen:
+
+```bash
+python setup_data.py --force
+```
+
+### Voraussetzungen für Kaggle
+
+- Kaggle CLI installiert: `pip install kaggle`
+- Auth-Datei vorhanden unter `~/.kaggle/kaggle.json`
+
+Wenn die Authentifizierung fehlt, beendet sich das Skript mit einer verständlichen Fehlermeldung.
+
+### Zielstruktur
 
 ```
 data_raw/
 ├── A/
 ├── B/
 ├── C/
-...
+├── L/
+├── O/
+├── V/
+├── W/
+└── Y/
+
+external_test/
+├── dataset2/
+│   ├── A/
+│   ├── B/
+│   ├── C/
+│   ├── L/
+│   ├── O/
+│   ├── V/
+│   ├── W/
+│   └── Y/
+└── dataset3/
+    ├── A/
+    ├── B/
+    ├── C/
+    ├── L/
+    ├── O/
+    ├── V/
+    ├── W/
+    └── Y/
+```
+
+### Beispiel Summary
+
+```text
+========================================================================
+SETUP DATA SUMMARY
+========================================================================
+kaggle_asl_1: ERFOLG
+  Quelle: Kaggle ASL Dataset 1
+  Training nach data_raw/: 1880 Dateien
+  Verteilung: {"A": 235, "B": 235, "C": 235, "L": 235, "O": 235, "V": 235, "W": 235, "Y": 235}
+  Validierung: Training validiert: 1880 Dateien in data_raw
+
+kaggle_asl_2: ERFOLG
+  Quelle: Kaggle ASL Dataset 2
+  Training nach data_raw/: 1600 Dateien
+  Verteilung: {"A": 200, "B": 200, "C": 200, "L": 200, "O": 200, "V": 200, "W": 200, "Y": 200}
+  Test nach external_test/dataset2/: 640 Dateien
+  Verteilung: {"A": 80, "B": 80, "C": 80, "L": 80, "O": 80, "V": 80, "W": 80, "Y": 80}
+  Validierung: Training validiert: 1600 Dateien in data_raw
+  Validierung: Test validiert: 640 Dateien in external_test/dataset2
+
+zenodo_asl: ERFOLG
+  Quelle: Zenodo ASL Dataset
+  Test nach external_test/dataset3/: 800 Dateien
+  Verteilung: {"A": 100, "B": 100, "C": 100, "L": 100, "O": 100, "V": 100, "W": 100, "Y": 100}
+  Validierung: Test validiert: 800 Dateien in external_test/dataset3
+
+Logdatei: logs/setup_data.log
 ```
 
 
@@ -215,4 +312,3 @@ python clean_dataset.py
 - Verbesserung der Modellgenauigkeit
 - Deployment als Web-App (Flask / FastAPI)
 - Mobile Integration
-
