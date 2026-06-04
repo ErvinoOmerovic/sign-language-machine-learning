@@ -265,18 +265,6 @@ python predict_webcam.py
 - `models/`: Trainierte Modelle mit Timestamps
 - `logs/`: Strukturierte Logs für jeden Run
 
-## i) Zeitliche Entwicklung des Projekts
 
-| Version | Hauptänderung | Datum |
-|---------|---------------|-------|
-| v1.0 | Initial-Setup mit einfachem Training | Apr 2026 |
-| v1.1 | Data Cleaning Integration | Apr 2026 |
-| v1.2 | Logs-Reorganisation in Unterordner | Apr 21, 2026 |
-| v1.3 | Automatische Datenverteilungs-Analyse | Apr 21, 2026 |
-| v1.4 | Cleaning-Logs mit Timestamps | Apr 21, 2026 |
-| v2.0 | **Komplette Restrukturierung:** data_cleaned für Training, externe Tests nur für evaluate.py | Apr 22, 2026 |
-
----
-
-**Letzte Aktualisierung:** April 22, 2026 (v2.0)
+**Letzte Aktualisierung:** 02. Juni 2026
 
