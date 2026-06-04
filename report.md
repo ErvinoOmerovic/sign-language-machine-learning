@@ -35,70 +35,51 @@ Diese Bereinigung verbessert die Modellleistung signifikant und reduziert Overfi
 
 ## c) Datenbasis und Datenmanagement
 
-## 📊 Verwendete Datensätze
+## 📊 Verwendete Datensätze (Fakten)
 
-Dieses Projekt nutzt mehrere Datensätze mit insgesamt 8 Klassen (A, B, C, L, V, W, O, Y):
+Das Projekt verwendet die folgenden externen Datensätze. Die Links verweisen auf die Originalquellen:
 
-- **Datensatz 1 (Kaggle):**  
-  [ASL Alphabet Dataset](https://www.kaggle.com/datasets/debashishsau/aslamerican-sign-language-aplhabet-dataset)  
-  → ca. 450–550 Bilder pro Klasse
+- Datensatz 1 (Kaggle): [ASL Alphabet Dataset](https://www.kaggle.com/datasets/debashishsau/aslamerican-sign-language-aplhabet-dataset)
+- Datensatz 2 (Zenodo): [ASL Dataset](https://zenodo.org/records/14635573)
+- Datensatz 3 (Kaggle - Synthetic): [Synthetic ASL Alphabet Dataset](https://www.kaggle.com/datasets/lexset/synthetic-asl-alphabet)
 
-- **Datensatz 2 (Zenodo):**  
-  [ASL Dataset](https://zenodo.org/records/14635573)  
-  → ca. 450–550 Bilder pro Klasse  
-  → zusätzlich: 75 Bilder als separates externes Test-Set (`external_test/dataset2/`)
+Extrahiert werden ausschließlich die Klassen: A, B, C, L, V, W, O, Y.
 
-- **Datensatz 3 (Kaggle - Synthetic):**  
-  [Synthetic ASL Alphabet Dataset](https://www.kaggle.com/datasets/lexset/synthetic-asl-alphabet)  
-  → ca. 900 Bilder pro Klasse  
-  → zusätzlich: 100 Bilder als separates externes Test-Set (`external_test/dataset3/`)
+Aktuelle, projektinterne Fakten (aus den projektweiten Logs):
+- Anzahl Klassen: 8
+- Externe Test-Sets (gespeichert unter `external_test/`):
+  - `dataset2/` (Zenodo) — 75 Bilder pro Klasse ⇒ 600 Bilder total
+  - `dataset3/` (Synthetic) — 100 Bilder pro Klasse ⇒ 800 Bilder total
 
-**Aktuelle Verteilung in data_raw (kombiniert aus allen Datensätzen):**
-- Durchschnitt pro Klasse: ~1769 Bilder
-- Range: 1656-1886 Bilder pro Klasse (ausgeglichene Verteilung)
+Die Trainingsdaten für das Modell werden aus den bereinigten Bildern in `data_cleaned/` geladen. Die Rohdaten sind in `data_raw/` vorhanden und werden von den Cleaning-Skripten gelesen, aber nicht verändert.
 
-### Datenstruktur und Pipeline
+### Datenstruktur (tatsächlicher Zustand im Projekt)
 
 ```
-data_raw/              → Training & Validation (kombiniert aus allen Datensätzen)
-├── A/ (~1886 Bilder)
-├── B/ (~1884 Bilder)
-├── C/ (~1724 Bilder)
-├── L/ (~1669 Bilder)
-├── O/ (~1714 Bilder)
-├── V/ (~1667 Bilder)
-├── W/ (~1686 Bilder)
-└── Y/ (~1656 Bilder)
-   Total: ~13.886 Bilder (trainable Daten)
-
-data_cleaned/          → Nach Bereinigung (Training auf cleaned Daten)
-├── A/ (hochwertige Bilder nach Cleaning)
-├── B/
-└── ...
-
-external_test/         → FINALE TEST-Sets (nicht für Training!)
-├── dataset2/          (75 Bilder pro Klasse = 600 total)
-│   ├── A/ bis Y/ (je 75 Bilder)
-└── dataset3/          (100 Bilder pro Klasse = 800 total)
-    ├── A/ bis Y/ (je 100 Bilder)
-    Total external: 1.400 Bilder (finale Test-Daten)
+data_raw/        # Rohdaten (nur lesend verwendet)
+data_cleaned/    # Bereinigte Bilder, Eingang für Training
+external_test/   # Finale Test-Sets (dataset2/, dataset3/)
 ```
 
-### Datenaufbereitung und Cleaning
+Die exakten Bildzahlen pro Klasse in `data_raw/` können variieren, die aktuell verwendeten finalen Test-Sets sind jedoch die oben genannten (600 + 800 Bilder).
 
-Systematische Datenbereinigung vor Training:
-- **Duplikat-Erkennung:** Perceptual Hashing (8×8) entfernt nahezu identische Bilder
-- **Unschärfe-Filterung:** Laplacian Varianz (Threshold=40) entfernt blurry Bilder
-- **Qualitätsprüfung:** Entfernt beschädigte Dateien, ungültige Formate, extreme Inhalte
-- **Automatische Analyse:** Erstellt Datenverteilungs-Diagramme und Statistiken
+### Datenaufbereitung und Cleaning (Fakten)
 
-**Ergebnis:** Qualitätsgesteigerte Trainings- und Validierungsdaten in `data_cleaned/`
+Die Bereinigung erfolgt mit `clean_dataset.py` und umfasst:
+- Perceptual Hashing zur Duplikatserkennung (8×8 Hash)
+- Laplacian-Varianz (Threshold = 40) zur Erkennung starker Unschärfe
+- Entfernung beschädigter oder nicht ladbarer Dateien
+- Filterung nahezu einfarbiger (extremer) Bilder
+- Pro-Run-Logs und Datenverteilungs-Analysen werden in `logs/cleaning_logs/<timestamp>/` abgelegt
 
-### Data Augmentation
-- Horizontales Flip (für Spiegelung-Robustheit)
+Die bereinigten Bilder werden in `data_cleaned/` gespeichert und bilden die Grundlage für das Training.
+
+### Data Augmentation (Kurz, Fakten)
+
+- Horizontaler Flip
 - Rotation (±15°)
-- Helligkeitsvariation (0.8-1.2x)
-- Zoom und Verschiebungen
+- Helligkeitsvariation (0.8–1.2×)
+- Gelegentliche Zoom- und Verschiebungsoperationen
 
 ## d) Methodenwahl
 
@@ -125,103 +106,129 @@ data_raw/ → clean_dataset.py → data_cleaned/ → Training (80/20 Split nur T
 ### Warum CNN mit Transfer Learning?
 CNNs sind der Standard für Bildklassifikation. MobileNetV2 bietet gute Balance zwischen Genauigkeit und Performance für Echtzeit-Inference.
 
-## e) Training und Evaluation (Restrukturiert)
+## e) Training und Evaluation (Fakten und Interpretation)
 
-### Trainingsprozess
+Die folgende Darstellung trennt sachliche, reproduzierbare Ergebnisse (Fakten) von anschließenden Interpretationen.
 
-1. **Daten-Cleaning:**
-   ```bash
-   python clean_dataset.py
-   ```
-   - Input: `data_raw/` (unbereinigt)
-   - Output: `data_cleaned/` (bereinigt) + Logs mit Statistiken
-   - Logging: `logs/cleaning_logs/<timestamp>/`
+### e.1 Fakten — Training
 
-2. **Model Training:**
-   ```bash
-   python train_simple.py
-   ```
-   - Input: `data_cleaned/` (bereinigte Daten)
-   - Split: 80% Training, 20% Validation
-   - **Keine internen Tests mehr** (diese sind unreliabel)
-   - Output: trainiertes Modell + Training Curves + Epoch Metrics
+Die Trainingsmetriken werden epochal in `logs/training_metrics/` abgelegt. Für das zuletzt trainierte Modell (`models/sign_language_model_2026-04-21_21-43-41.h5`) ergeben sich aus den epochalen Logs (Datei `epoch_metrics_2026-04-21_21-43-41.csv`) folgende, direkt messbare Werte:
 
-3. **Finale Evaluation (automatisch gestartet):**
-   ```bash
-   python evaluate.py --model models/sign_language_model_<timestamp>.h5
-   ```
-   - Input: `external_test/` (alle Test-Datensätze)
-   - Output: Confusion Matrix + Classification Report (externe Testdaten!)
-   - Logging: `logs/classification_reports/`, `logs/confusion_matrices/`
+- Maximale Validierungsgenauigkeit (val_accuracy) in den Logs: 0.9874706268310547 (Epoch 12)
+- Val_accuracy zum Ende des Trainingslaufes (letzte aufgezeichnete Epoche): 0.9851213693618774 (Epoch 19)
+- Finale Trainingsaccuracy (letzte Epoche): 0.9962799549102783
+- In den epochalen Logs sind Loss- und Learning-Rate-Verläufe für alle Epochen gespeichert (siehe `logs/training_metrics/epoch_metrics_2026-04-21_21-43-41.csv`).
 
-### Metriken und Evaluation
+### e.2 Fakten — Finale (externe) Evaluation
 
-- **Accuracy, Precision, Recall, F1-Score:** Auf **externe** Test-Sets berechnet
-- **Confusion Matrix:** Visualisiert Fehlklassifikationen zwischen Buchstaben
-- **Classification Report:** Pro-Klasse Metriken
+Die finale Evaluation wurde auf den zusammengeführten externen Test-Sets durchgeführt. Das aktuellste und maßgebliche Classification-Report-Log ist `logs/classification_reports/classification_report_2026-04-22_13-37-47.txt` (EXTERNE TEST EVALUATION). Aus diesem Log gelten folgende gemessene Werte:
 
-**Kritisch:** Nur externe Tests zählen als echte Performance-Metriken!
+- Accuracy (externer Test, gesamt): 0.9171
+- Precision (macro/weighted in Log gerundet): 0.9204 (als Gesamtwert im Log angegeben)
+- Recall (gesamt): 0.9171
+- F1-Score (gesamt): 0.9174
+- Support (Anzahl Testbeispiele gesamt): 1400 (175 pro Klasse)
 
-### Logs-Struktur (Neu)
+Per-Klasse (Precision / Recall / F1 / Support) — Werte aus dem Classification Report:
 
-```
-logs/
-├── cleaning_logs/<timestamp>/
-│   ├── removed_images.txt      (welche Bilder, warum entfernt)
-│   ├── processing_methods.txt  (MediaPipe vs Fallback)
-│   └── summary.txt             (Cleaning-Statistiken)
-├── training_metrics/
-│   └── epoch_metrics_<timestamp>.csv
-├── training_curves/
-│   └── training_curves_<timestamp>.png
-├── classification_reports/
-│   └── classification_report_<timestamp>.txt (EXTERNE TEST EVAL)
-├── confusion_matrices/
-│   └── confusion_matrix_<timestamp>.png (EXTERNE TEST EVAL)
-└── data_analysis/
-    └── data_distribution_<timestamp>.{png,txt}
-```
+- A:  precision=0.95  recall=0.89  f1-score=0.91  support=175
+- B:  precision=0.99  recall=0.98  f1-score=0.98  support=175
+- C:  precision=0.92  recall=0.99  f1-score=0.95  support=175
+- L:  precision=0.87  recall=0.91  f1-score=0.89  support=175
+- V:  precision=0.93  recall=0.88  f1-score=0.91  support=175
+- W:  precision=0.91  recall=0.89  f1-score=0.90  support=175
+- O:  precision=0.97  recall=0.87  f1-score=0.92  support=175
+- Y:  precision=0.82  recall=0.94  f1-score=0.87  support=175
 
-**Timestamps:** Keine Überschreibung von älteren Runs, vollständige Historie erhalten.
+Die zugehörige Confusion-Matrix-Abbildung ist im Projekt unter `logs/confusion_matrices/confusion_matrix_2026-04-22_13-37-47.png` abgelegt; die Matrix visualisiert die Verteilung der Fehlklassifikationen zwischen den acht Klassen (siehe Interpretation unten).
 
-## f) Ergebnisse und Validierung
+### e.3 Interpretation — wissenschaftliche Einordnung der Ergebnisse
 
-### Erwartete Leistung
-- **Accuracy auf externe Tests:** 85-95% (abhängig von Datenqualität)
-- **Per-Class Precision/Recall:** >85% für alle Klassen
-- **Trainingsstabilität:** Kein Overfitting dank Augmentation und Dropout
+- Die Trainings- und Validierungsmetriken (val_accuracy bis 0.987) zeigen, dass das Modell auf den bereinigten Trainingsdaten sehr hohe Validierungsgenauigkeiten erreicht. Der Unterschied zwischen Validierungs- und externer Test-Accuracy (0.987 vs. 0.917) weist auf eine deutliche Generalisierungsdifferenz hin, die im Abschnitt "Diskussion" weiter analysiert wird.
+- Die per-Klasse-Werte aus dem Classification Report erlauben eine differenzierte Betrachtung: Klasse B und C zeigen besonders hohe Präzision/Recall-Werte, während Klasse Y eine vergleichsweise niedrige Präzision (0.82) kombiniert mit hohem Recall (0.94) aufweist; dies deutet auf eine erhöhte Rate an False-Positives bei Y hin (andere Klassen werden fälschlich als Y klassifiziert).
+- Klassen mit hoher Präzision, aber niedrigerem Recall (z. B. O: precision 0.97, recall 0.87) werden vergleichsweise selten fälschlich vorhergesagt, jedoch öfter übersehen (False-Negatives).
 
-### Qualitätskontrolle
-Durch Data Cleaning wird die Datenqualität nachweislich verbessert:
-- **Duplikate entfernt:** ~5-10% des Datensatzes
-- **Blurry Bilder entfernt:** ~3-5% des Datensatzes
-- **Fehlerhafte Dateien entfernt:** <1%
-- **Resultat:** Höhere Trainingseffizienz und bessere Generalisierung
+### e.4 Reproduzierbarkeit und Logs
 
-## g) Diskussion
+Alle für diese Ergebnisse relevanten Dateien sind im Repository abgelegt und zeitgestempelt:
 
-### Verbesserungen gegenüber Initial-Version
+- Trainingsmetriken: `logs/training_metrics/epoch_metrics_2026-04-21_21-43-41.csv`
+- Finale Classification Report: `logs/classification_reports/classification_report_2026-04-22_13-37-47.txt`
+- Confusion Matrix (Abbildung): `logs/confusion_matrices/confusion_matrix_2026-04-22_13-37-47.png`
 
-1. **Datenqualität:** Systematische Bereinigung vor Training statt Ad-hoc Lösungen
-2. **Zuverlässige Evaluation:** Externe Test-Sets statt interner Splits
-3. **Reproduzierbarkeit:** Timestamps und detailliertes Logging für jeden Run
-4. **Skalierbarkeit:** Einfache Integration neuer Datensätze möglich
-5. **Automatisierung:** Nach Training automatisch evaluate.py ausführen
+Diese Dateien enthalten die numerischen Werte, Plots und Tabellen, die zur Reproduktion der hier dargestellten Fakten erforderlich sind.
 
-### Bekannte Limitationen
+## f) Ergebnisse und Validierung (Fakten)
 
-- **Datensatzgröße:** Größere Datensätze würden weitere Verbesserungen bringen
-- **Echtzeit-Performance:** Auf schwächeren Geräten könnte Latenz auftreten
-- **Generalisierung:** Nur 8 Buchstaben; Erweiterung auf volles Alphabet erforderlich
-- **Umgebungen:** Training erfolgt unter kontrollierten Bedingungen; Extreme Lichtverhältnisse können problematisch sein
+In diesem Abschnitt werden die tatsächlichen, aus den Logs abgeleiteten Resultate zusammengefasst. Interpretative Aussagen folgen im nächsten Abschnitt.
 
-### Verbesserungspotenziale
+Fakten aus den Projektlogs (aktuellste, zeitgestempelte Dateien):
 
-- **Hand-Segmentierung:** MediaPipe Integration für bessere Robustheit
-- **Fine-Tuning:** Entire Model statt nur Top Layers trainieren
-- **Ensemble-Methoden:** Mehrere Modelle kombinieren
-- **Synthetic Data:** Zusätzliche Trainingsdaten generieren
-- **Attention Mechanisms:** Transformer-basierte Modelle für bessere Generalisierung
+- Finale externe Test-Accuracy: 0.9171 (siehe `logs/classification_reports/classification_report_2026-04-22_13-37-47.txt`)
+- Finale externe Precision (gesamt): 0.9204
+- Finale external Recall (gesamt): 0.9171
+- Finale external F1-Score (gesamt): 0.9174
+- Test-Support: 1.400 Bilder (8 Klassen × 175 Support pro Klasse)
+- Per-Klasse-Metriken sind unter e.2 dokumentiert (Precision/Recall/F1 pro Klasse).
+
+Ergebnisse der Datenbereinigung (aktuellster Cleaning-Run `logs/cleaning_logs/2026-04-21_21-12-50`):
+
+- Entfernte Einträge (aus `removed_images.txt`): 1.117 Bilder insgesamt
+  - davon markiert als `duplikat`: 426
+  - davon markiert als `unscharf` (Laplacian-Varianz Threshold=40): 691
+
+Trainingsverlauf (aus `logs/training_metrics/epoch_metrics_2026-04-21_21-43-41.csv`):
+
+- Höchste in-Log gemessene Validierungsgenauigkeit: 0.9874706268310547 (Epoch 12)
+- Val_accuracy am Ende des Laufs: 0.9851213693618774 (Epoch 19)
+- Finale Trainingsaccuracy (letzte Epoche): 0.9962799549102783
+
+Diese Fakten sind vollständig in den angegebenen Log-Dateien dokumentiert und ermöglichen eine reproduzierbare Nachprüfung.
+
+## g) Diskussion und Interpretation (auf Basis der Fakten)
+
+Die folgenden Aussagen sind interpretativ und stützen sich ausschließlich auf die oben dokumentierten Fakten (Training-Logs, Cleaning-Logs, Classification Report, Confusion-Matrix-Abbildung).
+
+- Modellleistung und Generalisierung: Das Modell erreicht auf den bereinigten Trainings-/Validierungsdaten sehr hohe Validierungsaccuracies (bis 0.987). Die externe Test-Accuracy (0.917) liegt jedoch deutlich darunter, was auf eine Generalisierungsdifferenz hinweist. Diese Differenz kann verschiedene Ursachen haben (siehe unten), ist aber empirisch aus den vorliegenden Logs belegt.
+
+- Per-Klasse-Analyse: Klassen B und C zeigen exzellente Performa (B: precision=0.99 / recall=0.98, C: precision=0.92 / recall=0.99). Klasse Y zeichnet sich durch einen hohen Recall (0.94) bei vergleichsweise niedriger Präzision (0.82) aus; dies bedeutet, dass Y selten übersehen wird, aber viele Fehlzuweisungen (False-Positives) in die Klasse Y erfolgen. Klassen wie O (precision=0.97, recall=0.87) werden vergleichsweise konservativ vorhergesagt (wenige False-Positives), aber häufiger übersehen (höherer Anteil False-Negatives).
+
+- Confusion Matrix (qualitative Interpretation): Die in `logs/confusion_matrices/confusion_matrix_2026-04-22_13-37-47.png` abgelegte Matrix korreliert mit den per-Klasse-Metriken: Es ist erkennbar, dass bestimmte Klassen (insbesondere solche mit ähnlicher Handform oder ähnlicher Silhouette) häufiger gegenseitig verwechselt werden. Konkret zeigt die Matrix erhöhte Einträge, die andere Klassen in Y einordnen (vereinbar mit Ys niedriger Präzision), während B und C weitgehend entlang der Diagonalen konzentriert sind (wenige Fehlklassifikationen).
+
+- Einfluss der Datenbereinigung: Der Cleaning-Run entfernte 1.117 Bilder, davon 426 Duplikate und 691 unscharfe Bilder. Dieser Schritt reduziert offensichtliches Rauschen und redundante Muster in den Trainingsdaten. Die sehr hohen Validierungswerte auf den bereinigten Daten deuten darauf hin, dass das Cleaning die Trainingsstabilität verbessert hat; die Differenz zur externen Test-Accuracy legt jedoch nahe, dass verbleibende Domänenunterschiede zwischen Trainings- und Testdaten bestehen.
+
+- Einfluss von Data Augmentation und Transfer Learning: Die Verwendung von Data Augmentation (Flip, Rotation, Helligkeitsvariation, Zoom) und Transfer Learning (MobileNetV2-Basis) ist ein plausibler Grund für die schnelle Konvergenz und die hohen Validierungswerte. Augmentation trägt zur Robustheit gegenüber Bildvariationen bei, Transfer Learning liefert vortrainierte Repräsentationen, die mit begrenzter Datenmenge effektiv adaptiert werden können.
+
+- Mögliche Ursachen für Fehlklassifikationen: Basierend auf den Fakten sind wahrscheinliche Ursachen:
+  - Domänenverschiebung zwischen Trainingsdaten (bereinigt) und externen Test-Sets
+  - Visuelle Ähnlichkeiten zwischen bestimmten Handgesten (Form, Fingerstellung)
+  - Unterschiedliche Bildqualität oder Perspektiven in den externen Testdaten
+  - Klassenbalance- oder Sampling-Effekte beim Zusammenfügen mehrerer Quellen
+
+Diese Punkte sollten als Hypothesen für weitere kontrollierte Experimente betrachtet werden; alle hier genannten Aussagen basieren ausschließlich auf den im Projekt vorhandenen Logs und Artefakten.
+
+## Praktische Anwendung
+
+Zusätzlich zur Trainings- und Evaluations-Pipeline wurde eine Echtzeit-Anwendung implementiert, die folgendes umfasst (Tatsachen, implementiert im Projektcode):
+
+- Laden des trainierten Modells: Das Skript `predict_webcam.py` lädt ein gespeichertes Modell aus `models/` (z. B. `models/sign_language_model.h5` oder zeitgestempelte Varianten) mittels TensorFlow/Keras.
+- Erfassung der Gesten über Webcam: `predict_webcam.py` nutzt OpenCV zur Kamerainitialisierung und kontinuierlichen Frame-Erfassung.
+- Vorhersage in Echtzeit: Jedes Kameraframe wird vorverarbeitet (Größenanpassung, Normalisierung) und an das geladene Modell übergeben; das Modell liefert Wahrscheinlichkeitswerte für die acht Klassen.
+- Anzeige des erkannten Buchstabens: Das erkannte Label (Max-Wahrscheinlichkeit) wird in das Kamerafenster gerendert, sodass die Vorhersage unmittelbar sichtbar ist.
+
+Die Implementierung in `predict_webcam.py` demonstriert die praktische Anwendbarkeit des entwickelten Modells in Echtzeit-Szenarien; Details zur Nutzung stehen in der Datei selbst und der zugehörigen README-Abschnitte.
+
+## Schlussreflexion
+
+Die abschließende Reflexion fasst zentrale Erkenntnisse des Projekts zusammen und bewertet deren Bedeutung für zukünftige Arbeiten.
+
+- Datenqualität ist zentral: Die Bereinigung (1.117 entfernte Bilder im relevanten Run) hat die Trainingsstabilität und Metriken auf den Validierungsdaten deutlich verbessert. Saubere, nicht redundante Daten sind eine Grundvoraussetzung für robuste Modelle.
+- Externe Tests sind notwendig: Der Abstand zwischen Validierungs- und externer Test-Performance zeigt, dass interne Validierungsmetriken allein nicht ausreichend sind, um Generalisierungsfähigkeit zu beurteilen. Externe, ungesehene Testsets liefern ein realistischeres Bild der Modellqualität.
+- Methodische Balance: Transfer Learning und Data Augmentation haben den Trainingsprozess effizient gemacht und zu schnellen Fortschritten geführt; sie ersetzen jedoch nicht die Notwendigkeit, Domänenunterschiede und Datenrepräsentativität systematisch zu adressieren.
+- Herausforderungen bei Handgesten: Visuelle Ähnlichkeiten, variierende Perspektiven und Bildqualität sind schwer zu eliminierende Fehlerquellen. Eine Kombination aus besserer Segmentierung (z. B. MediaPipe), zusätzlichen Trainingsbeispielen und gezielter Augmentation könnte hier Abhilfe schaffen.
+- Reproduzierbare Pipelines sind essenziell: Zeitgestempelte Logs, gespeicherte Modelle und klar dokumentierte Cleaning-Schritte ermöglichen nachvollziehbare Experimente und vereinfachen Fehleranalyse und iterative Verbesserung.
+
+Insgesamt liefert das Projekt eine reproduzierbare, praxisnahe Lösung mit guter Basisleistung (externe Accuracy 0.917), deren weitere Optimierung vor allem an der Reduktion von Domänenunterschieden und gezielter Fehleranalyse ansetzen sollte.
 
 ## h) Reproduzierbarkeit und Setup
 
@@ -266,5 +273,5 @@ python predict_webcam.py
 - `logs/`: Strukturierte Logs für jeden Run
 
 
-**Letzte Aktualisierung:** 02. Juni 2026
+**Letzte Aktualisierung:** 04. Juni 2026
 
