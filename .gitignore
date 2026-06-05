@@ -36,6 +36,9 @@ conda-meta/
 logs/
 *.log
 
+# EXCEPTION: report_assets/ wird versioniert für Report-Abbildungen
+!report_assets/
+
 # =========================
 # Models (sehr groß)
 # =========================
