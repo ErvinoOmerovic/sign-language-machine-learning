@@ -4,7 +4,7 @@
 
 Die Erkennung von Gebärdensprachen-Buchstaben in Echtzeit über eine Webcam stellt eine Herausforderung dar, da traditionelle Ansätze oft unter variierenden Lichtverhältnissen, Hintergründen und Spiegelungen leiden. Dieses Projekt zielt darauf ab, ein robustes Convolutional Neural Network (CNN)-basiertes Modell zu entwickeln, das 8 ausgewählte Gebärdensprachen-Buchstaben (A, B, C, L, V, W, O, Y) zuverlässig erkennt.
 
-**Forschungsfrage:** Wie zuverlässig kann ein CNN-basierter Ansatz mit Transfer Learning Gebärdensprachen-Buchstaben in Echtzeit über eine Webcam erkennen, unter Berücksichtigung von Spiegelungsproblemen, variierenden Umgebungsbedingungen und einer systematischen Datenbereinigung?
+**Forschungsfrage:** Wie zuverlässig kann ein CNN-basiertes Modell ausgewählte Gebärdensprachen-Buchstaben anhand von Bild- und Webcam-Daten sowie geeigneter Evaluationsmetriken klassifizieren?
 
 ## b) Theoretischer Hintergrund
 
@@ -37,7 +37,7 @@ Data Augmentation beschreibt die künstliche Veränderung vorhandener Trainingsb
 
 ## c) Datenbasis und Datenmanagement
 
-## 📊 Verwendete Datensätze (Fakten)
+## 📊 Verwendete Datensätze
 
 Das Projekt verwendet die folgenden externen Datensätze. Die Links verweisen auf die Originalquellen:
 
@@ -291,8 +291,7 @@ Die abschließende Reflexion fasst zentrale Erkenntnisse des Projekts zusammen u
 - Herausforderungen bei Handgesten: Visuelle Ähnlichkeiten, variierende Perspektiven und Bildqualität sind schwer zu eliminierende Fehlerquellen. Eine Kombination aus besserer Segmentierung (z. B. MediaPipe), zusätzlichen Trainingsbeispielen und gezielter Augmentation könnte hier Abhilfe schaffen.
 - Reproduzierbare Pipelines sind essenziell: Zeitgestempelte Logs, gespeicherte Modelle und klar dokumentierte Cleaning-Schritte ermöglichen nachvollziehbare Experimente und vereinfachen Fehleranalyse und iterative Verbesserung.
 
-Insgesamt liefert das Projekt eine reproduzierbare, praxisnahe Lösung mit guter Basisleistung (externe Accuracy 0.917), deren weitere Optimierung vor allem an der Reduktion von Domänenunterschieden und gezielter Fehleranalyse ansetzen sollte.
-
+Bezogen auf die Forschungsfrage lässt sich festhalten, dass das CNN-basierte Modell die ausgewählten Gebärdensprachen-Buchstaben insgesamt zuverlässig klassifizieren kann. Die externe Evaluation zeigt mit einer Accuracy von 0.917 sowie vergleichbaren Werten bei Precision, Recall und F1-Score eine gute Modellleistung auf ungesehenen Testdaten. Gleichzeitig zeigen die per-Klasse-Ergebnisse und die Confusion Matrix, dass die Zuverlässigkeit nicht für alle Buchstaben gleich hoch ist. Besonders ähnliche Handgesten oder Unterschiede zwischen Trainings- und Testdaten können zu Fehlklassifikationen führen. Damit kann die Forschungsfrage grundsätzlich positiv beantwortet werden, jedoch mit der Einschränkung, dass die praktische Webcam-Anwendung weiterhin von Faktoren wie Beleuchtung, Kameraperspektive und Handposition abhängig ist.
 ## h) Reproduzierbarkeit und Setup
 
 ### Installation
