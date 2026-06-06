@@ -1,175 +1,158 @@
 # Wissenschaftlicher Projektbericht: Erkennung von Gebärdensprachen-Buchstaben mit Machine Learning
 
-## a) Problemdefinition und Forschungsfrage
+## 1. Einleitung und Zieldefinition
 
-Die Erkennung von Gebärdensprachen-Buchstaben in Echtzeit über eine Webcam stellt eine Herausforderung dar, da traditionelle Ansätze oft unter variierenden Lichtverhältnissen, Hintergründen und Spiegelungen leiden. Dieses Projekt zielt darauf ab, ein robustes Convolutional Neural Network (CNN)-basiertes Modell zu entwickeln, das 8 ausgewählte Gebärdensprachen-Buchstaben (A, B, C, L, V, W, O, Y) zuverlässig erkennt.
+Die automatische Erkennung von Gebärdensprachen-Buchstaben ist ein relevantes Anwendungsfeld des maschinellen Lernens, da sie die digitale Unterstützung der Kommunikation mit Gebärdensprache ermöglichen kann. In diesem Projekt wird untersucht, wie ausgewählte statische Buchstaben der American Sign Language (ASL) mithilfe eines bildbasierten Machine-Learning-Modells erkannt werden können. Der Fokus liegt dabei auf acht ausgewählten Klassen: **A, B, C, L, V, W, O und Y**.
 
-**Forschungsfrage:** Wie zuverlässig kann ein CNN-basiertes Modell ausgewählte Gebärdensprachen-Buchstaben anhand von Bild- und Webcam-Daten sowie geeigneter Evaluationsmetriken klassifizieren?
+Ziel des Projekts ist die Entwicklung eines CNN-basierten Klassifikationsmodells, das Gebärdensprachen-Buchstaben anhand von Bilddaten erkennt und zusätzlich in einer einfachen Webcam-Anwendung praktisch demonstriert werden kann. Neben der reinen Modellgenauigkeit wird besonderer Wert auf eine nachvollziehbare Datenpipeline, eine saubere Datenbereinigung, eine externe Evaluation und eine reproduzierbare Projektdokumentation gelegt.
 
-## b) Theoretischer Hintergrund
+**Forschungsfrage:**  
+Wie zuverlässig kann ein CNN-basiertes Modell ausgewählte Gebärdensprachen-Buchstaben anhand von Bild- und Webcam-Daten sowie geeigneter Evaluationsmetriken klassifizieren?
 
-### Bildklassifikation
-Bildklassifikation beschreibt die automatische Zuordnung eines Bildes zu einer vordefinierten Klasse (Daroya et al., 2018, S.1). Im Projekt wird dieser Ansatz genutzt, da jeder Gebärdensprachen-Buchstabe als eigene Klasse betrachtet wird. Das Modell soll also anhand eines Bildes oder Webcam-Frames erkennen, ob beispielsweise A, B, C, L, V, W, O oder Y gezeigt wird. Damit handelt es sich um ein Mehrklassen-Klassifikationsproblem.
+Zur Beantwortung der Forschungsfrage werden unter anderem Accuracy, Precision, Recall, F1-Score und eine Confusion Matrix herangezogen. Dadurch wird nicht nur die Gesamtleistung des Modells bewertet, sondern auch analysiert, welche Klassen besonders zuverlässig erkannt werden und bei welchen Gebärden häufiger Fehlklassifikationen auftreten.
 
-### Convolutional Neural Networks (CNNs)
-Convolutional Neural Networks sind neuronale Netze, die besonders für Bilddaten geeignet sind, weil sie lokale Muster wie Kanten, Formen und Texturen erkennen können. Für Gebärdensprachen-Buchstaben ist das wichtig, da sich die Klassen oft durch kleine Unterschiede in Fingerstellung oder Handform unterscheiden. Ein CNN kann diese visuellen Merkmale automatisch aus den Trainingsdaten lernen. Deshalb bildet ein CNN die Grundlage des Modells (LeCun et al., 1998, S.5).
+## 2. Theoretischer Hintergrund
 
-### Transfer Learning
-Transfer Learning bedeutet, dass ein bereits vortrainiertes Modell für eine neue Aufgabe weiterverwendet wird. Dadurch muss das Modell nicht alle visuellen Merkmale von Grund auf neu lernen. In diesem Projekt wird MobileNetV2 verwendet, weil es eine effiziente Architektur für Bildklassifikation ist und sich gut für eine Echtzeit-Anwendung eignet. Das ist besonders sinnvoll, da das Modell später über eine Webcam schnell Vorhersagen liefern soll (Tan et al, 2018, S.2).
+### 2.1 Bildklassifikation
 
-### Data Cleaning und Qualitätssicherung
-Die Qualität der Trainingsdaten hat einen großen Einfluss auf die Modellleistung. Fehlerhafte, doppelte oder unscharfe Bilder können dazu führen, dass das Modell falsche Muster lernt (Côté et al., 2024, S.1; 14). Deshalb werden die Daten mit `clean_dataset.py` bereinigt. Dadurch soll die Datenbasis zuverlässiger und das Training stabiler werden.
+Bildklassifikation beschreibt die automatische Zuordnung eines Bildes zu einer vordefinierten Klasse (Daroya et al., 2018, S. 1). Im Projekt wird dieser Ansatz genutzt, da jeder Gebärdensprachen-Buchstabe als eigene Klasse betrachtet wird. Das Modell soll anhand eines Bildes oder Webcam-Frames erkennen, ob beispielsweise A, B, C, L, V, W, O oder Y gezeigt wird. Damit handelt es sich um ein Mehrklassen-Klassifikationsproblem.
 
-- **Duplikate entfernt** (Perceptual Hashing)
-- **Unschärfe filtert** (Laplacian Varianz, Threshold=40)
-- **Kaputte/ungültige Bilder entfernt** (Format-Fehler, beschädigte Dateien)
-- **Extreme Inhalte filtert** (>95% uniforme Farbe)
-- **Variation bewahrt** (unterschiedliche Lichtverhältnisse, Hautfarben, Perspektiven)
+### 2.2 Convolutional Neural Networks
 
-### Data Augmentation
-Data Augmentation beschreibt die künstliche Veränderung vorhandener Trainingsbilder, zum Beispiel durch Rotation, Helligkeitsänderung, Zoom oder Spiegelung. Dadurch sieht das Modell während des Trainings mehr Variationen der gleichen Klasse. Für dieses Projekt ist das wichtig, weil Webcam-Bilder je nach Licht, Position und Kameraeinstellung unterschiedlich aussehen können. Die Augmentation soll das Modell robuster gegenüber solchen Veränderungen machen (Shorten & Khoshgoftaar, 2019, S.4).
+Convolutional Neural Networks (CNNs) sind neuronale Netze, die besonders für Bilddaten geeignet sind, weil sie lokale Muster wie Kanten, Formen und Texturen erkennen können. Für Gebärdensprachen-Buchstaben ist das relevant, da sich die Klassen häufig durch kleine Unterschiede in Fingerstellung, Handform oder Silhouette unterscheiden. Ein CNN kann solche visuellen Merkmale automatisch aus den Trainingsdaten lernen und ist daher für die vorliegende Klassifikationsaufgabe geeignet (LeCun et al., 1998, S. 5).
 
-### Herausforderungen bei Handerkennung
-- **Spiegelung:** Webcams können gespiegelte Bilder liefern; dies wird durch ein Flip-Toggle adressiert.
-- **Variabilität:** Unterschiedliche Handformen, Beleuchtung und Hintergründe erschweren die Erkennung.
-- **Datenqualität:** Duplikate und fehlerhafte Bilder müssen vor dem Training entfernt werden.
-- **Echtzeit-Anforderungen:** Das Modell muss schnell genug für Live-Prediction sein.
+### 2.3 Transfer Learning
 
-## c) Datenbasis und Datenmanagement
+Transfer Learning bedeutet, dass ein bereits vortrainiertes Modell für eine neue Aufgabe weiterverwendet wird. Dadurch muss das Modell nicht alle visuellen Merkmale von Grund auf neu lernen. In diesem Projekt wird MobileNetV2 verwendet, da diese Architektur eine gute Balance zwischen Genauigkeit und Rechenaufwand bietet und sich deshalb für eine spätere Echtzeit-Anwendung über die Webcam eignet (Tan et al., 2018, S. 2).
 
-## 📊 Verwendete Datensätze
+### 2.4 Data Cleaning und Qualitätssicherung
 
-Das Projekt verwendet die folgenden externen Datensätze. Die Links verweisen auf die Originalquellen:
+Die Qualität der Trainingsdaten hat einen großen Einfluss auf die Modellleistung. Fehlerhafte, doppelte oder unscharfe Bilder können dazu führen, dass das Modell falsche Muster lernt oder zu stark auf bestimmte Datenartefakte reagiert (Côté et al., 2024, S. 1; 14). Deshalb werden die Daten vor dem Training mit `clean_dataset.py` bereinigt.
+
+Die Datenbereinigung umfasst unter anderem:
+
+- Entfernung von Duplikaten mithilfe von Perceptual Hashing
+- Filterung unscharfer Bilder über Laplacian-Varianz
+- Entfernung beschädigter oder nicht lesbarer Dateien
+- Filterung nahezu einfarbiger oder extremer Bildinhalte
+- Erhalt visueller Variation, z. B. unterschiedliche Lichtverhältnisse und Perspektiven
+
+Diese Schritte sollen die Datenbasis verlässlicher machen und die Grundlage für ein stabileres Training schaffen.
+
+### 2.5 Data Augmentation
+
+Data Augmentation beschreibt die künstliche Veränderung vorhandener Trainingsbilder, zum Beispiel durch Rotation, Helligkeitsänderung, Zoom oder Spiegelung. Dadurch sieht das Modell während des Trainings mehr Variationen derselben Klasse. Für dieses Projekt ist das wichtig, weil Webcam-Bilder je nach Licht, Position und Kameraeinstellung unterschiedlich aussehen können. Die Augmentation soll das Modell robuster gegenüber solchen Veränderungen machen (Shorten & Khoshgoftaar, 2019, S. 4).
+
+### 2.6 Herausforderungen bei der Handgestenerkennung
+
+Die Erkennung von Handgesten ist anspruchsvoll, da unterschiedliche Faktoren die Vorhersage beeinflussen können. Dazu gehören Beleuchtung, Hintergrund, Kamerawinkel, Handgröße, Bildqualität und mögliche Spiegelungen durch die Webcam. Zusätzlich sehen sich einige Gebärden visuell ähnlich, wodurch Fehlklassifikationen entstehen können. Diese Herausforderungen werden im Projekt durch Datenbereinigung, Data Augmentation, externe Testdaten und eine praktische Webcam-Anwendung berücksichtigt.
+
+## 3. Datenbasis und Datenmanagement
+
+### 3.1 Verwendete Datensätze
+
+Das Projekt verwendet drei externe Datensätze:
 
 - Datensatz 1 (Kaggle): [ASL Alphabet Dataset](https://www.kaggle.com/datasets/debashishsau/aslamerican-sign-language-aplhabet-dataset)
 - Datensatz 2 (Zenodo): [ASL Dataset](https://zenodo.org/records/14635573)
-- Datensatz 3 (Kaggle - Synthetic): [Synthetic ASL Alphabet Dataset](https://www.kaggle.com/datasets/lexset/synthetic-asl-alphabet)
+- Datensatz 3 (Kaggle, synthetisch): [Synthetic ASL Alphabet Dataset](https://www.kaggle.com/datasets/lexset/synthetic-asl-alphabet)
 
-Extrahiert werden ausschließlich die Klassen: A, B, C, L, V, W, O, Y.
+Aus diesen Datensätzen werden ausschließlich die acht Klassen **A, B, C, L, V, W, O und Y** verwendet. Die Auswahl beschränkt den Projektumfang bewusst, damit Training, Evaluation und Webcam-Demo innerhalb des Modulprojekts realistisch umgesetzt werden können.
 
-Aktuelle, projektinterne Fakten (aus den projektweiten Logs):
-- Anzahl Klassen: 8
-- Externe Test-Sets (gespeichert unter `external_test/`):
-  - `dataset2/` (Zenodo) — 75 Bilder pro Klasse ⇒ 600 Bilder total
-  - `dataset3/` (Synthetic) — 100 Bilder pro Klasse ⇒ 800 Bilder total
+### 3.2 Datenstruktur
 
-Die Trainingsdaten für das Modell werden aus den bereinigten Bildern in `data_cleaned/` geladen. Die Rohdaten sind in `data_raw/` vorhanden und werden von den Cleaning-Skripten gelesen, aber nicht verändert.
+Die Projektstruktur trennt Rohdaten, bereinigte Daten und externe Testdaten:
 
-### Datenstruktur (tatsächlicher Zustand im Projekt)
-
-```
-data_raw/        # Rohdaten (nur lesend verwendet)
-data_cleaned/    # Bereinigte Bilder, Eingang für Training
-external_test/   # Finale Test-Sets (dataset2/, dataset3/)
+```text
+data_raw/        # Rohdaten
+data_cleaned/    # bereinigte Trainingsdaten
+external_test/   # externe Testdaten
 ```
 
-Die exakten Bildzahlen pro Klasse in `data_raw/` können variieren, die aktuell verwendeten finalen Test-Sets sind jedoch die oben genannten (600 + 800 Bilder).
+Die Trainingsdaten werden aus `data_cleaned/` geladen. Die Rohdaten in `data_raw/` dienen als Ausgangsbasis für die Datenbereinigung. Die externen Testdaten unter `external_test/` werden nicht für das Training verwendet, sondern ausschließlich für die finale Evaluation.
 
-### Datenaufbereitung und Cleaning (Fakten)
+### 3.3 Datenaufbereitung
 
-Die Bereinigung erfolgt mit `clean_dataset.py` und umfasst:
-- Perceptual Hashing zur Duplikatserkennung (8×8 Hash)
-- Laplacian-Varianz (Threshold = 40) zur Erkennung starker Unschärfe
-- Entfernung beschädigter oder nicht ladbarer Dateien
-- Filterung nahezu einfarbiger (extremer) Bilder
-- Zeitgestempelte Logging-Daten und Datenverteilungs-Analysen für jeden Cleaning-Run
+Die Bereinigung erfolgt mit dem Skript `clean_dataset.py`. Dabei werden unter anderem doppelte, unscharfe oder beschädigte Bilder entfernt. Anschließend werden die Bilddaten für das Training vorbereitet und durch Data Augmentation erweitert. Dazu gehören:
 
-Die bereinigten Bilder werden in `data_cleaned/` gespeichert und bilden die Grundlage für das Training.
+- horizontaler Flip
+- Rotation um bis zu ±15°
+- Helligkeitsvariation
+- Zoom- und Verschiebungsoperationen
 
-### Data Augmentation (Kurz, Fakten)
+Die Aufbereitung soll sicherstellen, dass das Modell nicht nur auf sehr einheitliche Trainingsbilder reagiert, sondern auch mit leichten Variationen umgehen kann.
 
-- Horizontaler Flip
-- Rotation (±15°)
-- Helligkeitsvariation (0.8–1.2×)
-- Gelegentliche Zoom- und Verschiebungsoperationen
+## 4. Beschreibung der Methodik
 
-## d) Methodenwahl
+### 4.1 Trainingspipeline
 
-### Trainings-Pipeline (Updated)
+Die ursprüngliche Pipeline wurde so angepasst, dass die Daten zunächst bereinigt und erst danach für Training und Validierung genutzt werden:
 
-**Früher:**
-```
-data_raw/ → Train/Val/Test Split → Training mit internem Test
+```text
+data_raw/ → clean_dataset.py → data_cleaned/ → Training und Validierung
+                                      ↓
+                              external_test/ → finale Evaluation
 ```
 
-**Neu:**
-```
-data_raw/ → clean_dataset.py → data_cleaned/ → Training (80/20 Split nur Train/Val)
-                                              ↓
-                         external_test/ → Finale Evaluation
-```
+Diese Struktur wurde gewählt, weil die Datenqualität ein zentraler Faktor für die spätere Modellleistung ist. Durch die vorgelagerte Bereinigung wird offensichtliches Rauschen reduziert, bevor das Modell trainiert wird.
 
-### Warum diese Struktur?
-1. **Datensauberkeit:** Cleaning entfernt Rauschen vor dem Training
-2. **Echte Evaluation:** external_test ist vollständig getrennt und ungesehen
-3. **Reproduzierbarkeit:** Jeder Cleaning-Run hat timestamp-gesteuerte Logs
-4. **Scalability:** Neue Datensätze können einfach integriert werden
+### 4.2 Modellwahl
 
-### Warum CNN mit Transfer Learning?
-CNNs sind der Standard für Bildklassifikation. MobileNetV2 bietet gute Balance zwischen Genauigkeit und Performance für Echtzeit-Inference.
+Für die Klassifikation wird ein CNN-basierter Ansatz mit Transfer Learning verwendet. Als Basisarchitektur kommt MobileNetV2 zum Einsatz. Diese Entscheidung wurde getroffen, weil CNNs für Bildklassifikationsaufgaben gut geeignet sind und MobileNetV2 vergleichsweise effizient arbeitet. Dies ist besonders relevant, da das Modell nicht nur offline evaluiert, sondern auch in einer Webcam-Demo eingesetzt wird.
 
-## e) Training und Evaluation
+### 4.3 Begründung der getroffenen Entscheidungen
 
-In diesem Abschnitt wird der Trainings- und Evaluationsprozess beschrieben. Das Modell wird auf bereinigten Trainingsdaten trainiert und anschließend auf externen, zuvor ungesehenen Testdaten evaluiert.
+Die wichtigsten Entscheidungen im Projekt lassen sich wie folgt begründen:
 
-### e.1 Trainingsablauf
+| Entscheidung | Begründung |
+|---|---|
+| Auswahl von acht Klassen | Begrenzung des Projektumfangs und bessere Kontrollierbarkeit der Evaluation |
+| Nutzung eines CNN-basierten Modells | Geeignet für visuelle Mustererkennung in Bilddaten |
+| Einsatz von Transfer Learning | Effizienteres Training und Nutzung vortrainierter Merkmalsrepräsentationen |
+| Datenbereinigung vor dem Training | Reduktion von Duplikaten, Unschärfe und beschädigten Dateien |
+| Externe Testdaten | Realistischere Bewertung der Generalisierungsfähigkeit |
+| Webcam-Demo | Praktische Demonstration der Anwendbarkeit des Modells |
 
-Das Modell wird mit klassischem Supervised Learning auf den bereinigten Trainingsdaten trainiert. Der Datensatz wird intern in Trainings- und Validierungsdaten (80/20-Split) aufgeteilt. Die Trainingsmetriken werden epochal dokumentiert und erfassen Accuracy, Loss sowie Learning-Rate-Verläufe.
+### 4.4 Evaluation
 
-Die gemessenen Trainingsergebnisse zeigen folgende Werte:
+Zur Bewertung des Modells werden mehrere Metriken verwendet:
 
-- **Maximale Validierungsgenauigkeit:** 0.9875 (Epoch 12)
-- **Finale Validierungsgenauigkeit:** 0.9851 (Epoch 19)
-- **Finale Trainingsgenauigkeit:** 0.9963 (Epoch 19)
+- **Accuracy** zur Bewertung der Gesamtklassifikation
+- **Precision** zur Analyse falsch positiver Vorhersagen
+- **Recall** zur Analyse übersehener Klassen
+- **F1-Score** als kombinierte Bewertung aus Precision und Recall
+- **Confusion Matrix** zur Visualisierung von Fehlklassifikationen zwischen Klassen
 
-Diese Werte deuten auf ein stabiles, konvergentes Training ohne signifikante Überanpassung hin (Training-Accuracy nur leicht höher als Validation-Accuracy).
+Die finale Evaluation erfolgt auf externen Testdaten, die nicht im Training verwendet wurden. Dadurch soll verhindert werden, dass die Modellleistung nur auf interne Validierungsdaten bezogen wird.
 
-### e.2 Evaluationsmethodik
+## 5. Ergebnisse und Erkenntnisse
 
-Die finale Evaluation wird auf externen Test-Sets durchgeführt, die vollständig vom Training-/Validierungsprozess getrennt sind. Diese Datensätze stammen aus unterschiedlichen Quellen und bieten eine unvoreingenommene Schätzung der Generalisierungsfähigkeit des Modells.
-
-Der Evaluationsprozess umfasst:
-- Vorhersagen auf allen externen Test-Bildern
-- Berechnung von Accuracy, Precision, Recall und F1-Score
-- Erstellung einer Confusion Matrix zur Visualisierung von Fehlklassifikationen
-- Dokumentation per-Klasse-Metriken für detaillierte Analyse
-
-## f) Ergebnisse und Validierung
-
-In diesem Abschnitt werden die konkreten Ergebnisse des Trainingslaufs und der externen Evaluation dargestellt. Alle Werte stammen aus tatsächlich durchgeführten Experimenten und Messungen.
-
-### f.1 Übersicht der Evaluationsmetriken
+### 5.1 Übersicht der Evaluationsmetriken
 
 Die finale externe Evaluation liefert folgende Gesamtmetriken:
 
 | Metrik | Wert |
-|--------|------|
+|---|---:|
 | Accuracy | 0.9171 |
 | Precision | 0.9204 |
 | Recall | 0.9171 |
 | F1-Score | 0.9174 |
-| Test-Support (Anzahl Bilder) | 1400 (175 pro Klasse) |
+| Test-Support | 1400 Bilder |
 
-### f.2 Trainingsverlauf
+Die externe Accuracy von 0.9171 zeigt, dass das Modell rund 91,7 % der externen Testbilder korrekt klassifiziert hat. Die ähnlichen Werte bei Precision, Recall und F1-Score deuten darauf hin, dass die Gesamtleistung über die betrachteten Klassen hinweg relativ ausgewogen ist.
 
-Der Trainingsverlauf zeigt nachfolgende Grafik Accuracy und Loss über alle Trainingsepochen hinweg:
+### 5.2 Trainingsverlauf
 
 ![Trainings- und Validierungsverlauf](report_assets/training_curves.png)
 
-*Abbildung 1: Verlauf von Accuracy (oben) und Loss (unten) während des Trainings über 19 Epochen. Die Trainingskurve steigt kontinuierlich an, während die Validierungskurve nach Epoch 12 ein Plateau erreicht.*
+*Abbildung 1: Verlauf von Accuracy und Loss während des Trainings.*
 
-Aus dem Trainingsverlauf sind folgende Punkte zu beobachten:
+Der Trainingsverlauf zeigt eine schnelle Verbesserung in den ersten Epochen und anschließend eine Stabilisierung auf hohem Niveau. Die höchste Validierungsgenauigkeit lag bei 0.9875. Am Ende des Trainings betrug die Validierungsgenauigkeit 0.9851 und die Trainingsgenauigkeit 0.9963. Der Abstand zwischen Trainings- und Validierungswerten bleibt moderat, was auf ein insgesamt stabiles Training hindeutet.
 
-- **Schnelle initiale Konvergenz:** Beide Kurven steigen steil in den ersten Epochen an, was auf eine effektive Lernrate und gute Datenvorbereitung hindeutet.
-- **Stabilisierung:** Ab Epoch 12 stabilisiert sich die Validierungskurve bei hohem Niveau, während die Trainingsgenauigkeit weiter ansteigt.
-- **Kein dramatisches Overfitting:** Der Abstand zwischen Training und Validierung bleibt moderat, was auf ausgeglichene Generalisierung deutet.
-
-### f.3 Resultat-Metriken pro Klasse
-
-Die folgende Tabelle zeigt die Klassifikationsmetriken für jede der acht Gebärdensprachen-Klassen:
+### 5.3 Ergebnisse pro Klasse
 
 | Klasse | Precision | Recall | F1-Score | Support |
-|--------|-----------|--------|----------|---------|
+|---|---:|---:|---:|---:|
 | A | 0.95 | 0.89 | 0.91 | 175 |
 | B | 0.99 | 0.98 | 0.98 | 175 |
 | C | 0.92 | 0.99 | 0.95 | 175 |
@@ -179,122 +162,69 @@ Die folgende Tabelle zeigt die Klassifikationsmetriken für jede der acht Gebär
 | O | 0.97 | 0.87 | 0.92 | 175 |
 | Y | 0.82 | 0.94 | 0.87 | 175 |
 
-### f.4 Confusion Matrix und Fehlklassifikationen
+Die per-Klasse-Ergebnisse zeigen, dass die Klassen B und C besonders zuverlässig erkannt werden. Die Klasse Y weist dagegen eine niedrigere Precision auf. Dies bedeutet, dass andere Klassen häufiger fälschlich als Y vorhergesagt werden. Die Klasse O zeigt eine hohe Precision, aber einen niedrigeren Recall, wodurch echte O-Bilder teilweise anderen Klassen zugeordnet werden.
 
-Die Confusion Matrix visualisiert, wie oft jede Klasse korrekt oder fehlerhaft klassifiziert wurde:
+### 5.4 Confusion Matrix
 
 ![Confusion Matrix der externen Evaluation](report_assets/confusion_matrix_external_evaluation.png)
 
-*Abbildung 2: Confusion Matrix der externen Evaluation. Die Diagonale zeigt korrekt klassifizierte Bilder, Off-Diagonal-Einträge zeigen Verwechslungen zwischen Klassen. Die Tiefe der Farbe indiziert die Häufigkeit.*
+*Abbildung 2: Confusion Matrix der externen Evaluation.*
 
-Interpretation der Confusion Matrix:
+Die Confusion Matrix zeigt, welche Klassen korrekt erkannt und welche miteinander verwechselt wurden. Die starke Diagonale verdeutlicht, dass der Großteil der Bilder korrekt klassifiziert wurde. Werte außerhalb der Diagonalen weisen auf Fehlklassifikationen hin und helfen dabei, problematische Klassen gezielt zu identifizieren.
 
-- **Diagonal-Dominanz:** Die starke Ausprägung der Diagonalen zeigt, dass die meisten Bilder korrekt klassifiziert werden.
-- **Cluster von Fehlklassifikationen:** Bestimmte Klassen-Paare zeigen erhöhte gegenseitige Verwechslung, was auf visuell ähnliche Handgesten hindeutet.
-- **Asymmetrie:** Einige Verwechslungen sind asymmetrisch (z. B. kann Klasse X häufig als Y oder Z fehlklassifiziert werden, während Y selten als X fehlklassifiziert wird). Dies korreliert mit den in f.3 beobachteten Precision/Recall-Mustern.
-
-### f.5 Datenverteilung nach Bereinigung
-
-Die folgende Grafik zeigt die Verteilung der Bilder pro Klasse nach der Datenbereinigung:
+### 5.5 Datenverteilung nach Bereinigung
 
 ![Datenverteilung nach der Bereinigung](report_assets/data_distribution.png)
 
-*Abbildung 3: Verteilung der bereinigten Bilddaten pro Klasse. Die Höhe der Balken zeigt die Anzahl der verbleibenden Trainingsdaten nach Duplikat- und Unschärfe-Filterung.*
+*Abbildung 3: Verteilung der bereinigten Bilddaten pro Klasse.*
 
-Die Datenbereinigung entfernte insgesamt 1.117 Bilder aus dem ursprünglichen Datensatz:
-- **426 Duplikate** (Perceptual Hashing)
-- **691 unscharfe Bilder** (Laplacian Varianz < 40)
+Die Datenbereinigung entfernte insgesamt 1.117 Bilder aus dem ursprünglichen Datensatz. Davon wurden 426 Bilder als Duplikate und 691 Bilder als unscharf identifiziert. Die verbleibenden Daten zeigen eine verhältnismäßig ausgeglichene Klassenverteilung und bilden die Grundlage für das Training.
 
-Die verbleibenden bereinigten Daten bilden die Grundlage für das Training und zeigen eine verhältnismäßig ausgewogene Klassenverteilung.
+## 6. Diskussion und Interpretation
 
-## g) Diskussion und Interpretation
+### 6.1 Modellleistung und Generalisierung
 
-Dieser Abschnitt interpretiert die in Abschnitt f) dokumentierten Ergebnisse und ordnet sie in den wissenschaftlichen Kontext ein.
+Das Modell erreicht auf den internen Validierungsdaten sehr hohe Werte, während die externe Test-Accuracy bei 0.9171 liegt. Diese Differenz zeigt, dass die externen Testdaten anspruchsvoller sind und eine realistischere Einschätzung der Generalisierungsfähigkeit liefern. Die externe Accuracy von über 91 % ist für die betrachteten acht Klassen ein gutes Ergebnis, zeigt aber auch, dass das Modell nicht fehlerfrei arbeitet.
 
-### g.1 Modellleistung und Generalisierung
+### 6.2 Fehlermuster
 
-Das Modell erzielt im Training sehr hohe Validierungsgenauigkeiten (bis 0.9875), während die externe Test-Accuracy bei 0.9171 liegt. Diese Differenz von etwa 6.7 Prozentpunkten ist ein typisches Phänomen bei Bildklassifikation und weist auf eine Generalisierungslücke zwischen Trainings- und Testverteilung hin. Mögliche Ursachen:
+Die per-Klasse-Metriken und die Confusion Matrix zeigen, dass nicht alle Klassen gleich zuverlässig erkannt werden. Besonders auffällig ist die Klasse Y mit einer niedrigeren Precision. Das deutet darauf hin, dass andere Gebärden teilweise fälschlich als Y klassifiziert werden. Bei Klasse O ist der Recall geringer, was bedeutet, dass echte O-Bilder häufiger übersehen werden.
 
-1. **Domänenunterschiede:** Die externen Test-Sets stammen aus unterschiedlichen Datenquellen und können unterschiedliche Bildqualität, Beleuchtung oder Perspektive aufweisen.
-2. **Trainings-/Test-Set-Asymmetrie:** Obwohl die Datenbereinigung durchgeführt wurde, können verbleibende systematische Unterschiede zwischen bereinierten Trainingsdaten und rohen Test-Sets bestehen.
-3. **Overfitting auf Trainingsvariationen:** Trotz Augmentation und Regularisierung kann das Modell auf subtile Artefakte in den Trainingsdaten trainiert haben.
+Diese Fehlermuster lassen sich vermutlich durch visuelle Ähnlichkeiten zwischen bestimmten Handgesten, Unterschiede in der Bildqualität und Domänenunterschiede zwischen Trainings- und Testdaten erklären.
 
-Dies ist allerdings nicht atypisch und weist nicht auf ein fehlgeschlagenes Modell hin. Eine externe Test-Accuracy von über 91% ist für Gebärdensprachen-Erkennung auf 8 Klassen ein solides Ergebnis.
+### 6.3 Einfluss der Datenbereinigung
 
-### g.2 Per-Klasse-Analyse und Fehlermuster
+Die Datenbereinigung hatte eine wichtige Funktion im Projekt, da sie offensichtliches Rauschen aus den Trainingsdaten entfernt hat. Die Entfernung von Duplikaten reduziert die Gefahr, dass das Modell wiederholte Bilder zu stark gewichtet. Die Entfernung unscharfer Bilder verbessert die visuelle Qualität der Trainingsdaten. Dadurch wird die Grundlage für ein stabileres und nachvollziehbareres Training geschaffen.
 
-Die Klasse-spezifischen Metriken offenbaren interessante Muster:
+### 6.4 Einfluss von Transfer Learning und Data Augmentation
 
-- **Starke Klassen (B, C):** Klasse B zeigt exzellente Präzision (0.99) und Recall (0.98), was darauf hindeutet, dass die Handgeste für B visuell sehr distinktiv ist. Ähnliches gilt für Klasse C mit hohem Recall (0.99).
-- **Unbalancierte Metriken (Y, O):** Klasse Y weist niedrige Präzision (0.82) bei hohem Recall (0.94) auf. Dies bedeutet, dass Y seltener übersehen wird, aber viele andere Klassen fälschlicherweise als Y klassifiziert werden. Dies könnte auf eine visuell „ähnliche" oder ubiquitäre Merkmale von Y hindeuten.
-- **Konservative Vorhersagen (O):** Klasse O hat hohe Präzision (0.97) aberniedereres Recall (0.87), was bedeutet, dass das Modell O selten falsch vorhergesagt, jedoch manches echte O übersehen wird.
+Transfer Learning unterstützt das Training, da bereits gelernte visuelle Merkmale wiederverwendet werden. Dadurch kann das Modell schneller konvergieren und auch mit begrenzter Datenmenge sinnvolle Merkmale lernen. Data Augmentation erweitert die Variation der Trainingsbilder und trägt dazu bei, dass das Modell robuster gegenüber leichten Veränderungen in Beleuchtung, Position und Ausrichtung wird.
 
-Diese Muster sind konsistent mit der Confusion Matrix und deuten darauf hin, dass bestimmte Handgesten visuell ähnlicher sind. Eine detaillierte ergonomische Analyse der Handformen könnte weitere Einsichten liefern.
+### 6.5 Praxisanwendbarkeit
 
-### g.3 Einfluss der Datenbereinigung
+Die Webcam-Anwendung zeigt, dass das trainierte Modell nicht nur theoretisch evaluiert, sondern auch praktisch eingesetzt werden kann. Über `predict_webcam.py` wird das Modell geladen, ein Kamerabild verarbeitet und die vorhergesagte Klasse direkt angezeigt. Die praktische Nutzung hängt jedoch weiterhin von äußeren Faktoren ab, zum Beispiel Beleuchtung, Kameraperspektive und Position der Hand.
 
-Die Entfernung von 1.117 Bildern (426 Duplikate, 691 unscharfe Bilder) hatte nachweisliche positive Effekte:
+## 7. Schlussfolgerung
 
-1. **Reduzierte Redundanz:** Duplikate können zu artifiziellen Übergewichtung identischer Bilder in verschiedenen Batches führen. Ihre Entfernung verbessert die Generalisierung.
-2. **Bessere Signal-Qualität:** Das Entfernen stark unscharfer Bilder erhöht die Trainingssignal-Qualität, was sich in den stabilen, hohen Validierungsmetriken widerspiegelt.
-3. **Ausgewogene Datensätze:** Die resultierende Datenverteilung zeigt gut ausgewogene Klassen, was Biases bei der Modelltraining vermindert.
+Die Forschungsfrage kann grundsätzlich positiv beantwortet werden. Das CNN-basierte Modell klassifiziert die ausgewählten Gebärdensprachen-Buchstaben auf externen Testdaten mit einer Accuracy von 0.9171 und erreicht auch bei Precision, Recall und F1-Score gute Werte. Damit zeigt das Modell eine insgesamt zuverlässige Leistung für die acht betrachteten Klassen.
 
-Allerdings enthielten die ursprünglichen Trainingsdaten offensichtlich bereits gute Qualität und Vielfalt — die Cleaning-Gewinne waren inkrementell statt transformativ. Dies ist ein positives Zeichen, da es zeigt, dass die Quelldatensätze von Anfang an relativ wohl kuratiert waren.
+Gleichzeitig zeigen die Ergebnisse, dass die Zuverlässigkeit je nach Buchstabe variiert. Besonders die per-Klasse-Metriken und die Confusion Matrix machen deutlich, dass einzelne Klassen häufiger verwechselt werden. Für eine praktische Webcam-Anwendung ist das Modell daher gut geeignet, jedoch noch abhängig von kontrollierten Bedingungen wie guter Beleuchtung und klarer Handposition.
 
-### g.4 Einfluss von Transfer Learning und Augmentation
+Insgesamt liefert das Projekt eine reproduzierbare und praxisnahe Umsetzung einer Gebärdensprachen-Buchstabenerkennung mit Machine Learning. Die Kombination aus Datenbereinigung, Transfer Learning, externer Evaluation und Webcam-Demo zeigt, dass der gewählte Ansatz für den Projektumfang angemessen ist.
 
-Das Projekt nutzt unter anderem MobileNetV2 als Basis-Architektur (Transfer Learning) sowie Data Augmentation (Rotation, Flip, Helligkeitsvariation). Diese Entscheidungen haben wahrscheinlich folgende Effekte:
+## 8. Zukünftige Arbeiten
 
-1. **Transfer Learning:** Vortrainierte Gewichte auf ImageNet ermöglichen schnelle Konvergenz und Lerneffizienz auch mit limitiertem eigenen Datensatz. Dies erklärt die schnellen, stabilen Trainingsverläufe.
-2. **Data Augmentation:** Durch künstliche Variationen (Rotation ±15°, Flip, Helligkeitsanpassung) „sieht" das Modell mehr vielfältige Trainingsbeispiele und lernt robustere Merkmale. Dies trägt zur kleineren Generalisierungslücke bei.
+Für zukünftige Arbeiten ergeben sich mehrere Erweiterungsmöglichkeiten:
 
-Beide Techniken sind in modernen Bildklassifikationsprojekten Standard und wurden angemessen eingesetzt.
+1. **Erweiterung auf das vollständige Alphabet:** Das Modell könnte auf weitere Buchstaben ausgeweitet werden.
+2. **Integration von Bewegungsgebärden:** Buchstaben wie J und Z erfordern Bewegungsinformationen und könnten mit Videodaten behandelt werden.
+3. **Bessere Handsegmentierung:** Verfahren wie MediaPipe könnten genutzt werden, um die Handregion zuverlässiger vom Hintergrund zu trennen.
+4. **Mehr reale Webcam-Daten:** Zusätzliche Aufnahmen unter verschiedenen Licht- und Hintergrundbedingungen könnten die Praxisleistung verbessern.
+5. **Optimierung für Echtzeit:** Das Modell könnte für schnellere Inferenz oder mobile Nutzung weiter optimiert werden.
 
-### g.5 Generalisierungsfähigkeit und Praxisanwendbarkeit
+## 9. Reproduzierbarkeit und Setup
 
-Die externe Test-Accuracy von 91.71% ist ein realistisches Maß der Modellgeneralisierung auf ungesehene Daten. Für eine praktische Webcam-Anwendung bedeutet dies:
-
-- **Bereich A und B werden sehr zuverlässig erkannt** (>89% Recall).
-- **Das Modell verfehlt selten Klasse C oder Y**, aber gibt manchmal falsche Alarm für andere Klassen.
-- **Praktisch anwendbar:** Eine Fehlerrate von ~8% ist für interaktive Anwendungen akzeptabel, solange Nutzer kurze Wiederholungen tolerieren.
-
-Für hochsicherheitskritische Anwendungen (z. B. medizinische Gebärdensprachen-Erkennung) würden agilere Schwellwert-Tuning oder Ensemble-Methoden empfohlen.
-
-### g.6 Möglichkeiten zur weiteren Verbesserung
-
-Auf Basis der Ergebnisse sind folgende Optimierungspfade vielversprechend:
-
-1. **Bessere Segmentierung:** Die Nutzung von Hand-Segmentierungs-Modellen (z. B. MediaPipe) könnte irrelevante Hintergrund-Merkmale filtern.
-2. **Domänen-adaptive Augmentation:** Spezifische Augmentierungen basierend auf den erkannten Unterschieden zwischen Trainings- und Testverteilung.
-3. **Ensemble-Methoden:** Kombination mehrerer Modelle könnte Fehlklassifikationen reduzieren.
-4. **Gezieltes Resampling:** Zusätzliche hochqualitative Trainingsbilder für häufig verwechselte Klassen-Paare.
-5. **Threshold-Tuning:** Anpassung der Entscheidungsschwellen je Klasse basierend auf Recall/Precision-Trade-offs.
-
-## Praktische Anwendung
-
-Zusätzlich zur Trainings- und Evaluations-Pipeline wurde eine Echtzeit-Anwendung implementiert, die folgendes umfasst (Tatsachen, implementiert im Projektcode):
-
-- Laden des trainierten Modells: Das Skript `predict_webcam.py` lädt ein gespeichertes Modell aus `models/` (z. B. `models/sign_language_model.h5` oder zeitgestempelte Varianten) mittels TensorFlow/Keras.
-- Erfassung der Gesten über Webcam: `predict_webcam.py` nutzt OpenCV zur Kamerainitialisierung und kontinuierlichen Frame-Erfassung.
-- Vorhersage in Echtzeit: Jedes Kameraframe wird vorverarbeitet (Größenanpassung, Normalisierung) und an das geladene Modell übergeben; das Modell liefert Wahrscheinlichkeitswerte für die acht Klassen.
-- Anzeige des erkannten Buchstabens: Das erkannte Label (Max-Wahrscheinlichkeit) wird in das Kamerafenster gerendert, sodass die Vorhersage unmittelbar sichtbar ist.
-
-Die Implementierung in `predict_webcam.py` demonstriert die praktische Anwendbarkeit des entwickelten Modells in Echtzeit-Szenarien; Details zur Nutzung stehen in der Datei selbst und der zugehörigen README-Abschnitte.
-
-## Schlussreflexion
-
-Die abschließende Reflexion fasst zentrale Erkenntnisse des Projekts zusammen und bewertet deren Bedeutung für zukünftige Arbeiten.
-
-- Datenqualität ist zentral: Die Bereinigung (1.117 entfernte Bilder im relevanten Run) hat die Trainingsstabilität und Metriken auf den Validierungsdaten deutlich verbessert. Saubere, nicht redundante Daten sind eine Grundvoraussetzung für robuste Modelle.
-- Externe Tests sind notwendig: Der Abstand zwischen Validierungs- und externer Test-Performance zeigt, dass interne Validierungsmetriken allein nicht ausreichend sind, um Generalisierungsfähigkeit zu beurteilen. Externe, ungesehene Testsets liefern ein realistischeres Bild der Modellqualität.
-- Methodische Balance: Transfer Learning und Data Augmentation haben den Trainingsprozess effizient gemacht und zu schnellen Fortschritten geführt; sie ersetzen jedoch nicht die Notwendigkeit, Domänenunterschiede und Datenrepräsentativität systematisch zu adressieren.
-- Herausforderungen bei Handgesten: Visuelle Ähnlichkeiten, variierende Perspektiven und Bildqualität sind schwer zu eliminierende Fehlerquellen. Eine Kombination aus besserer Segmentierung (z. B. MediaPipe), zusätzlichen Trainingsbeispielen und gezielter Augmentation könnte hier Abhilfe schaffen.
-- Reproduzierbare Pipelines sind essenziell: Zeitgestempelte Logs, gespeicherte Modelle und klar dokumentierte Cleaning-Schritte ermöglichen nachvollziehbare Experimente und vereinfachen Fehleranalyse und iterative Verbesserung.
-
-Bezogen auf die Forschungsfrage lässt sich festhalten, dass das CNN-basierte Modell die ausgewählten Gebärdensprachen-Buchstaben insgesamt zuverlässig klassifizieren kann. Die externe Evaluation zeigt mit einer Accuracy von 0.917 sowie vergleichbaren Werten bei Precision, Recall und F1-Score eine gute Modellleistung auf ungesehenen Testdaten. Gleichzeitig zeigen die per-Klasse-Ergebnisse und die Confusion Matrix, dass die Zuverlässigkeit nicht für alle Buchstaben gleich hoch ist. Besonders ähnliche Handgesten oder Unterschiede zwischen Trainings- und Testdaten können zu Fehlklassifikationen führen. Damit kann die Forschungsfrage grundsätzlich positiv beantwortet werden, jedoch mit der Einschränkung, dass die praktische Webcam-Anwendung weiterhin von Faktoren wie Beleuchtung, Kameraperspektive und Handposition abhängig ist.
-## h) Reproduzierbarkeit und Setup
-
-### Installation
+### 9.1 Installation
 
 ```bash
 python -m venv .venv
@@ -302,40 +232,42 @@ source .venv/bin/activate   # macOS/Linux
 pip install -r requirements.txt
 ```
 
-### Workflow
+### 9.2 Workflow
 
 ```bash
-# 1. Daten bereinigen (optional, wenn rohes data_raw vorliegt)
+# 1. Daten bereinigen
 python clean_dataset.py
 
-# 2. Modell trainieren (automatisch startet evaluate.py nach dem Training)
+# 2. Modell trainieren
 python train_simple.py
 
-# 3. (Optional) Manuelle finale Evaluation
-python evaluate.py --model models/sign_language_model_<timestamp>.h5
+# 3. Modell evaluieren
+python evaluate.py --model models/sign_language_model.h5
 
-# 4. Echtzeit-Vorhersage
+# 4. Echtzeit-Vorhersage starten
 python predict_webcam.py
 ```
 
-### Abhängigkeiten
+### 9.3 Abhängigkeiten
 
 - Python 3.10+
 - TensorFlow 2.16.1+
 - OpenCV 4.9.0+
-- scikit-learn, NumPy, Matplotlib, Pillow
-- MediaPipe 0.10.11 (für Cleaning)
+- scikit-learn
+- NumPy
+- Matplotlib
+- Pillow
+- MediaPipe 0.10.11
 
-### Wichtige Verzeichnisse
+### 9.4 Wichtige Verzeichnisse
 
-- `data_raw/`: Rohdaten (nicht verändern!)
-- `data_cleaned/`: Nach Cleaning
-- `external_test/`: Test-Sets (dataset2, dataset3, ...)
-- `models/`: Trainierte Modelle mit Timestamps
-- `logs/`: Strukturierte Logs für jeden Run
+- `data_raw/`: Rohdaten
+- `data_cleaned/`: bereinigte Trainingsdaten
+- `external_test/`: externe Testdaten
+- `models/`: trainiertes Modell
+- `report_assets/`: Abbildungen für den Bericht
 
-
-## Literaturverzeichnis
+## 10. Literaturverzeichnis
 
 Côté, P.-O., Nikanjam, A., Ahmed, N., Humeniuk, D., & Khomh, F. (2024). Data cleaning and machine learning: A systematic literature review. *Automated Software Engineering, 31*(2), 54. https://doi.org/10.1007/s10515-024-00453-w
 
@@ -347,6 +279,4 @@ Shorten, C., & Khoshgoftaar, T. M. (2019). A survey on image data augmentation f
 
 Tan, C., Sun, F., Kong, T., Zhang, W., Yang, C., & Liu, C. (2018). A survey on deep transfer learning (arXiv:1808.01974). *arXiv*. https://doi.org/10.48550/arXiv.1808.01974
 
-
-**Letzte Aktualisierung:** 04. Juni 2026
-
+**Letzte Aktualisierung:** 06. Juni 2026
