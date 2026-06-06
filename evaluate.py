@@ -62,7 +62,7 @@ def evaluate_model(model_path, external_test_dir='external_test'):
     """
     Evaluiert das Modell auf EXTERNEN Testdaten (external_test/).
     Dies ist die FINALE EVALUATION mit allen separaten Testdatensätzen.
-
+    
     Args:
         model_path: Pfad zum trainierten Modell
         external_test_dir: Pfad zum external_test Ordner

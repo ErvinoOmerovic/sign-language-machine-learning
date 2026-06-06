@@ -219,14 +219,14 @@ def clean_dataset(
     deduplicate: bool,
 ) -> None:
     global RUN_TIMESTAMP, REMOVED_LOG_PATH, METHOD_LOG_PATH, SUMMARY_LOG_PATH
-    
+
     # Generiere Timestamp für diesen Run
     RUN_TIMESTAMP = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
     run_log_dir = Path(f'logs/cleaning_logs/{RUN_TIMESTAMP}')
     REMOVED_LOG_PATH = run_log_dir / 'removed_images.txt'
     METHOD_LOG_PATH = run_log_dir / 'processing_methods.txt'
     SUMMARY_LOG_PATH = run_log_dir / 'summary.txt'
-    
+
     if not source_dir.exists():
         raise FileNotFoundError(f'Quelle nicht gefunden: {source_dir}')
 
@@ -303,7 +303,7 @@ def clean_dataset(
     # Automatische Datenverteilungs-Analyse mit Timestamp
     print("\n📈 Erstelle Datenverteilungs-Analyse...")
     create_data_distribution_analysis(dest_dir)
-    
+
     # Erstelle Summary
     print("\n📝 Erstelle Cleaning-Zusammenfassung...")
     create_cleaning_summary(
@@ -311,7 +311,7 @@ def clean_dataset(
         total_processed, total_removed, total_saved
     )
     print(f"✓ Zusammenfassung gespeichert: {SUMMARY_LOG_PATH}")
-    
+
     # Finale Info
     print(f"\n✓ Alle Logs gespeichert in: {run_log_dir}")
 
@@ -327,14 +327,14 @@ def create_cleaning_summary(
     global SUMMARY_LOG_PATH
     if SUMMARY_LOG_PATH is None:
         return
-    
+
     with SUMMARY_LOG_PATH.open('w', encoding='utf-8') as f:
         f.write("="*80 + "\n")
         f.write("CLEANING SESSION SUMMARY\n")
         f.write("="*80 + "\n\n")
-        
+
         f.write(f"Timestamp: {RUN_TIMESTAMP}\n\n")
-        
+
         f.write("KONFIGURATION:\n")
         f.write("-" * 40 + "\n")
         f.write(f"Source Directory:      {source_dir.resolve()}\n")
@@ -343,19 +343,19 @@ def create_cleaning_summary(
         f.write(f"Blur Threshold:        {blur_threshold}\n")
         f.write(f"Normalization:         {'Ja' if normalize else 'Nein'}\n")
         f.write(f"Deduplication:         {'Ja (aktiv)' if deduplicate else 'Nein (deaktiviert)'}\n\n")
-        
+
         f.write("ERGEBNISSE:\n")
         f.write("-" * 40 + "\n")
         f.write(f"Gesamt verarbeitet:    {total_processed}\n")
         f.write(f"Entfernt:              {total_removed}\n")
         f.write(f"Gespeichert:           {total_saved}\n")
         f.write(f"Erfolgsquote:          {(total_saved/total_processed*100):.1f}%\n\n")
-        
+
         f.write("LOGS:\n")
         f.write("-" * 40 + "\n")
         f.write(f"Removed Images:        removed_images.txt\n")
         f.write(f"Processing Methods:    processing_methods.txt\n\n")
-        
+
         f.write("="*80 + "\n")
         f.write("Ende des Summaries\n")
         f.write("="*80 + "\n")

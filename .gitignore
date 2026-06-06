@@ -46,6 +46,14 @@ models/
 *.h5
 *.keras
 
+# -------------------------
+# Allow committing the canonical latest model(s)
+# Keep timestamped models ignored to avoid large repo growth,
+# but allow the canonical files so users cloning the repo can use them directly.
+!models/
+!models/sign_language_model.h5
+!models/sign_language_model.keras
+
 # =========================
 # Datasets (NICHT committen!)
 # =========================

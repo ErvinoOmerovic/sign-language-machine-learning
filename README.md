@@ -36,7 +36,7 @@ project/
 ├── data_raw/            # Rohdaten (nicht im Repo)
 ├── data_cleaned/        # Vorverarbeitete Daten (nicht im Repo)
 ├── external_test/       # Externer Testdatensatz (nicht im Repo)
-├── models/              # Gespeicherte Modelle (nicht im Repo)
+├── models/              # Gespeicherte Modelle (Das aktuellste Model ist im Repo enthalten)
 ├── logs/                # Trainingslogs
 │   ├── classification_reports/  # Classification Reports
 │   ├── confusion_matrices/      # Confusion Matrices
@@ -216,6 +216,8 @@ Das trainierte Modell wird gespeichert unter:
 models/sign_language_model.h5
 ```
 
+Hinweis: Das Repository kann die kanonische, aktuellste Modell-Datei `models/sign_language_model.h5` enthalten, sodass Nutzer das Projekt nach dem Klonen direkt verwenden können. Zeitgestempelte Checkpoints (z. B. `models/sign_language_model_YYYY-MM-DD_hh-mm-ss.h5`) werden weiterhin ignoriert, um die Repository-Größe zu begrenzen.
+
 
 ## 📊 Evaluation
 
@@ -272,15 +274,15 @@ report.md
 
 ---
 
-## ⚠️ Hinweis
+⚠️ Hinweis
 
 Folgende Inhalte sind bewusst **nicht im Repository enthalten**:
 
 - Datensätze (`data_raw`, `data_cleaned`, `external_test`)
-- Modelle (`models/`)
+- Zeitgestempelte Modell-Checkpoints (historische `models/sign_language_model_*.h5` Dateien)
 - virtuelle Umgebung (`.venv`)
 
-Diese sind in `.gitignore` definiert.
+Diese Einträge sind in `.gitignore` definiert. Die kanonische, aktuellste Modell-Datei `models/sign_language_model.h5` kann hingegen dem Repository beigefügt werden, damit das Projekt nach dem Klonen sofort nutzbar ist.
 
 ---
 
