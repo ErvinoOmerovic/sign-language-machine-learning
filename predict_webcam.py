@@ -188,8 +188,12 @@ def draw_predictions(frame, pred_class, prob, mediapipe_active):
     # MediaPipe-Status
     cv2.putText(frame, mode_text, (10, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 2)
 
-    # Vorhersage
-    cv2.putText(frame, f"{pred_class}: {prob:.2f}", (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+    # Vorhersage nur anzeigen, wenn vorhanden (pred_class kann None sein)
+    if pred_class is None:
+        # Keine Hand / keine Vorhersage
+        cv2.putText(frame, "No hand detected", (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 165, 255), 2)
+    else:
+        cv2.putText(frame, f"{pred_class}: {prob:.2f}", (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
 
     return frame
 
@@ -280,9 +284,21 @@ def main():
             cropped_frame = frame
 
         # ========== Vorhersage ==========
-        pred_class, prob = predict_frame(
-            model, cropped_frame, flip=flip_flag[0]
-        )
+        # Standard: keine Vorhersage anzeigen
+        pred_class = None
+        prob = 0.0
+
+        # Wenn MediaPipe verfügbar ist, zeigen wir Vorhersagen NUR wenn eine Hand erkannt wurde.
+        if mediapipe_available:
+            if mediapipe_active_now:
+                pred_class, prob = predict_frame(
+                    model, cropped_frame, flip=flip_flag[0]
+                )
+        else:
+            # Fallback: falls MediaPipe nicht vorhanden ist, verhalte dich wie vorher (Vorhersage immer)
+            pred_class, prob = predict_frame(
+                model, cropped_frame, flip=flip_flag[0]
+            )
 
         # Zeichne auf Frame
         frame = draw_predictions(frame, pred_class, prob, mediapipe_active_now)
