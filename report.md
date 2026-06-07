@@ -42,7 +42,7 @@ Convolutional Neural Networks (CNNs) sind neuronale Netze, die besonders für Bi
 
 ### 2.3 Transfer Learning
 
-Transfer Learning bedeutet, dass ein bereits vortrainiertes Modell für eine neue Aufgabe weiterverwendet wird. Dadurch muss das Modell nicht alle visuellen Merkmale von Grund auf neu lernen. In diesem Projekt wird MobileNetV2 verwendet, da diese Architektur eine gute Balance zwischen Genauigkeit und Rechenaufwand bietet und sich deshalb für eine spätere Echtzeit-Anwendung über die Webcam eignet (Tan et al., 2018, S. 2).
+Transfer Learning bedeutet, dass ein bereits vortrainiertes Modell für eine neue Aufgabe weiterverwendet wird. Dadurch muss das Modell nicht alle visuellen Merkmale von Grund auf neu lernen. In diesem Projekt wird MobileNetV2 verwendet, da diese Architektur eine gute Balance zwischen Genauigkeit und Rechenaufwand bietet und durch ihre effiziente Struktur für ressourcenschonende Bildklassifikation geeignet ist. Dadurch passt sie besonders gut zu einer späteren Echtzeit-Anwendung über die Webcam (Tan et al., 2018, S. 2; Sandler et al., 2018).
 
 ### 2.4 Data Cleaning und Qualitätssicherung
 
@@ -60,7 +60,7 @@ Diese Schritte sollen die Datenbasis verlässlicher machen und die Grundlage fü
 
 ### 2.5 Data Augmentation
 
-Data Augmentation beschreibt die künstliche Veränderung vorhandener Trainingsbilder, zum Beispiel durch Rotation, Helligkeitsänderung, Zoom oder Spiegelung. Dadurch sieht das Modell während des Trainings mehr Variationen derselben Klasse. Für dieses Projekt ist das wichtig, weil Webcam-Bilder je nach Licht, Position und Kameraeinstellung unterschiedlich aussehen können. Die Augmentation soll das Modell robuster gegenüber solchen Veränderungen machen (Shorten & Khoshgoftaar, 2019, S. 4).
+Data Augmentation beschreibt die künstliche Veränderung vorhandener Trainingsbilder, zum Beispiel durch Rotation, Helligkeitsänderung oder Spiegelung. Dadurch kann ein Modell mit zusätzlichen Variationen derselben Klasse konfrontiert werden. Für dieses Projekt ist dieser Ansatz relevant, weil Webcam-Bilder je nach Licht, Position und Kameraeinstellung unterschiedlich aussehen können. Im Projekt wurden entsprechende Augmentationsschritte vorbereitet und insbesondere durch eigene Webcam-Aufnahmen ergänzt, um die Datenbasis stärker an reale Aufnahmebedingungen anzunähern (Shorten & Khoshgoftaar, 2019, S. 4).
 
 ### 2.6 Herausforderungen bei der Handgestenerkennung
 
@@ -90,18 +90,17 @@ data_cleaned/    # bereinigte Trainingsdaten
 external_test/   # externe Testdaten
 ```
 
-Die Trainingsdaten werden aus `data_cleaned/` geladen. Die Rohdaten in `data_raw/` dienen als Ausgangsbasis für die Datenbereinigung. Die externen Testdaten unter `external_test/` werden nicht für das Training verwendet, sondern ausschließlich für die finale Evaluation.
+Die Trainingsdaten werden aus `data_cleaned/` geladen. Die Rohdaten in `data_raw/` dienen als Ausgangsbasis für die Datenbereinigung. Die externen Testdaten unter `external_test/` werden nicht für das Training verwendet, sondern ausschließlich für die finale Evaluation. Die finale externe Evaluation umfasst insgesamt **1.400 Testbilder**, bestehend aus acht Klassen mit jeweils **175 Bildern**. Dadurch wird sichergestellt, dass die finale Bewertung auf Daten erfolgt, die vom Trainings- und Validierungsprozess getrennt sind.
 
 ### 3.3 Datenaufbereitung
 
-Die Bereinigung erfolgt mit dem Skript `clean_dataset.py`. Dabei werden unter anderem doppelte, unscharfe oder beschädigte Bilder entfernt. Anschließend werden die Bilddaten für das Training vorbereitet und durch Data Augmentation erweitert. Dazu gehören:
+Die Bereinigung erfolgt mit dem Skript `clean_dataset.py`. Dabei werden unter anderem doppelte, unscharfe oder beschädigte Bilder entfernt. Anschließend werden die Bilddaten für das Training vorbereitet. Im Projekt wurden außerdem Augmentationsschritte für typische Bildvariationen berücksichtigt. Dazu gehören:
 
-- horizontaler Flip
-- Rotation um bis zu ±15°
-- Helligkeitsvariation
-- Zoom- und Verschiebungsoperationen
+- horizontaler Flip mit einer Wahrscheinlichkeit von 50 %
+- Rotation um bis zu ±15° mit einer Wahrscheinlichkeit von 30 %
+- Helligkeitsvariation im Bereich von 0,8 bis 1,2 mit einer Wahrscheinlichkeit von 30 %
 
-Die Aufbereitung soll sicherstellen, dass das Modell nicht nur auf sehr einheitliche Trainingsbilder reagiert, sondern auch mit leichten Variationen umgehen kann.
+Die Aufbereitung soll sicherstellen, dass das Modell nicht nur auf sehr einheitliche Trainingsbilder reagiert, sondern auch mit leichten Variationen umgehen kann. Da die Live-Erkennung über eine Webcam erfolgt, wurde die Datenbasis zusätzlich durch eigene Webcam-Aufnahmen erweitert.
 
 Die eigenen Webcam-Bilder wurden in die bestehende Klassenstruktur integriert und anschließend ebenfalls durch die Datenbereinigung verarbeitet. Dadurch werden diese Aufnahmen nicht separat behandelt, sondern gemeinsam mit den externen Trainingsdaten in die Pipeline aufgenommen. Der Vorteil besteht darin, dass das Modell nicht nur auf kuratierte Datensatzbilder trainiert wird, sondern auch Beispiele aus der tatsächlichen Einsatzumgebung sieht. Dies ist besonders wichtig, da bei der Live-Erkennung über die Webcam andere Bedingungen auftreten können als in den externen Datensätzen.
 
@@ -125,6 +124,8 @@ Diese Struktur wurde gewählt, weil die Datenqualität ein zentraler Faktor für
 
 Für die Klassifikation wird ein CNN-basierter Ansatz mit Transfer Learning verwendet. Als Basisarchitektur kommt MobileNetV2 zum Einsatz. Diese Entscheidung wurde getroffen, weil CNNs für Bildklassifikationsaufgaben gut geeignet sind und MobileNetV2 vergleichsweise effizient arbeitet. Dies ist besonders relevant, da das Modell nicht nur offline evaluiert, sondern auch in einer Webcam-Demo eingesetzt wird.
 
+Technisch wird MobileNetV2 ohne ursprünglichen Klassifikationskopf verwendet. Die vortrainierte Basis wird eingefroren und um projektspezifische Klassifikationsschichten ergänzt. Auf die MobileNetV2-Ausgabe folgen ein Global-Average-Pooling-Layer, ein Dense-Layer mit 128 Neuronen, Dropout zur Reduktion von Overfitting und eine finale Softmax-Schicht mit acht Ausgängen für die Klassen A, B, C, L, V, W, O und Y.
+
 ### 4.3 Begründung der getroffenen Entscheidungen
 
 Die wichtigsten Entscheidungen im Projekt lassen sich wie folgt begründen:
@@ -139,6 +140,8 @@ Die wichtigsten Entscheidungen im Projekt lassen sich wie folgt begründen:
 | Webcam-Demo | Praktische Demonstration der Anwendbarkeit des Modells |
 | Eigene Webcam-Aufnahmen | Ergänzung der externen Datensätze um realistische Beispiele aus der späteren Anwendungssituation |
 | Capture-Ansatz für eigene Bilder | Gezielte Aufnahme zusätzlicher Trainingsdaten pro Klasse, insbesondere zur Verbesserung der Praxistauglichkeit |
+| 80/20-Train-/Validation-Split | Trennung von Trainings- und Validierungsdaten zur Überwachung des Lernverlaufs |
+| Externe Evaluation mit 1.400 Bildern | Unabhängige Bewertung der Generalisierung auf ungesehenen Testdaten |
 
 ### 4.4 Evaluation
 
@@ -150,7 +153,31 @@ Zur Bewertung des Modells werden mehrere Metriken verwendet:
 - **F1-Score** als kombinierte Bewertung aus Precision und Recall
 - **Confusion Matrix** zur Visualisierung von Fehlklassifikationen zwischen Klassen
 
-Die finale Evaluation erfolgt auf externen Testdaten, die nicht im Training verwendet wurden. Dadurch soll verhindert werden, dass die Modellleistung nur auf interne Validierungsdaten bezogen wird.
+Die finale Evaluation erfolgt auf externen Testdaten, die nicht im Training verwendet wurden. Dadurch soll verhindert werden, dass die Modellleistung nur auf interne Validierungsdaten bezogen wird. Die externen Testdaten umfassen 1.400 Bilder, aufgeteilt auf acht Klassen mit jeweils 175 Bildern.
+
+### 4.5 Trainingskonfiguration
+
+Die Trainingskonfiguration wurde so gewählt, dass ein stabiler Trainingsverlauf bei gleichzeitig überschaubarem Rechenaufwand möglich ist. Grundlage ist ein MobileNetV2-Modell mit vortrainierten ImageNet-Gewichten. Der ursprüngliche Klassifikationskopf von MobileNetV2 wird nicht verwendet, sondern durch einen eigenen Klassifikationskopf für die acht Projektklassen ersetzt.
+
+| Parameter | Wert |
+|---|---|
+| Modellbasis | MobileNetV2 |
+| Vortrainierte Gewichte | ImageNet bzw. lokal gespeicherte MobileNetV2-Gewichte |
+| Inputgröße | 224 × 224 × 3 |
+| Anzahl Klassen | 8 |
+| Train-/Validation-Split | 80 % Training / 20 % Validierung |
+| Batch Size | 32 |
+| Maximale Epochenzahl | 40 |
+| Tatsächlich dokumentierte Epochen im finalen Lauf | 14 |
+| Optimizer | Adam |
+| Learning Rate | 0,001 |
+| Loss Function | Sparse Categorical Crossentropy |
+| Ausgabeschicht | Dense Layer mit 8 Softmax-Ausgängen |
+| Regularisierung | Dropout 0,5 |
+| Early Stopping | aktiviert, Patience 5, Wiederherstellung der besten Gewichte |
+| Learning-Rate-Anpassung | ReduceLROnPlateau, Faktor 0,5, Patience 3 |
+
+Die MobileNetV2-Basis wurde im Training eingefroren. Dadurch wurden die vortrainierten Merkmalsrepräsentationen genutzt, während vor allem die neu hinzugefügten Klassifikationsschichten auf die acht Gebärdensprachen-Buchstaben angepasst wurden. Die Pixelwerte der Bilder wurden vor dem Training auf den Wertebereich von 0 bis 1 normalisiert. Das beste Modell wurde anhand der Validierungsgenauigkeit gespeichert und anschließend zusätzlich auf externen Testdaten evaluiert.
 
 ## 5. Ergebnisse und Erkenntnisse
 
@@ -190,7 +217,7 @@ Der Trainingsverlauf zeigt eine schnelle Verbesserung in den ersten Epochen und 
 - Validierungsgenauigkeit am Ende der aufgezeichneten Epochen: **0.9877**
 - Trainingsgenauigkeit in der letzten Epoche: **0.9931**
 
-Die Kurven zeigen, dass das Modell bereits nach wenigen Epochen eine hohe Genauigkeit erreicht. Der Loss sinkt sowohl im Training als auch in der Validierung deutlich ab. Gegen Ende des Trainings bleibt die Validierungsgenauigkeit stabil, während die Trainingsgenauigkeit nur leicht höher liegt. Dies spricht für ein insgesamt stabiles Training ohne stark ausgeprägtes Overfitting.
+Die Kurven zeigen, dass das Modell bereits nach wenigen Epochen eine hohe Genauigkeit erreicht. Der Loss sinkt sowohl im Training als auch in der Validierung deutlich ab. Gegen Ende des Trainings bleibt die Validierungsgenauigkeit stabil, während die Trainingsgenauigkeit nur leicht höher liegt. Dies spricht für ein insgesamt stabiles Training ohne stark ausgeprägtes Overfitting. Die schnelle Konvergenz ist durch den Einsatz von Transfer Learning, die begrenzte Anzahl von acht Klassen und die bereinigte Datenbasis erklärbar. Da die Validierungsdaten aus derselben Datenbasis wie die Trainingsdaten stammen, ist die externe Testleistung dennoch aussagekräftiger für die tatsächliche Generalisierungsfähigkeit.
 
 ### 5.3 Übersicht der Evaluationsmetriken
 
@@ -257,7 +284,7 @@ Die Datenbereinigung hatte eine wichtige Funktion im Projekt, da sie offensichtl
 
 ### 6.4 Einfluss von Transfer Learning, Data Augmentation und eigenen Webcam-Daten
 
-Transfer Learning unterstützt das Training, da bereits gelernte visuelle Merkmale wiederverwendet werden. Dadurch kann das Modell schneller konvergieren und auch mit begrenzter Datenmenge sinnvolle Merkmale lernen. Data Augmentation erweitert die Variation der Trainingsbilder und trägt dazu bei, dass das Modell robuster gegenüber leichten Veränderungen in Beleuchtung, Position und Ausrichtung wird.
+Transfer Learning unterstützt das Training, da bereits gelernte visuelle Merkmale wiederverwendet werden. Dadurch kann das Modell schneller konvergieren und auch mit begrenzter Datenmenge sinnvolle Merkmale lernen. Die im Projekt berücksichtigten Augmentationsschritte adressieren typische Bildvariationen wie Spiegelung, Rotation und Helligkeit. Ergänzend dazu erhöhen die eigenen Webcam-Aufnahmen die reale Variation der Datenbasis und tragen dazu bei, dass das Modell stärker mit Bedingungen der späteren Anwendung konfrontiert wird.
 
 Die nachträglich ergänzten eigenen Webcam-Aufnahmen erhöhen zusätzlich die Nähe zwischen Trainingsdaten und praktischer Anwendung. Dadurch werden Bedingungen berücksichtigt, die in externen Datensätzen nicht immer ausreichend abgebildet sind, zum Beispiel konkrete Webcam-Qualität, Raumbeleuchtung, Hintergrund und individuelle Handhaltung. Dies ist besonders relevant, weil das Modell nicht nur auf externen Testdaten, sondern auch in einer Live-Anwendung funktionieren soll.
 
@@ -373,6 +400,9 @@ Côté, P.-O., Nikanjam, A., Ahmed, N., Humeniuk, D., & Khomh, F. (2024). Data c
 Daroya, R., Peralta, D., & Naval, P. (2018). Alphabet sign language image classification using deep learning. In *TENCON 2018 – 2018 IEEE Region 10 Conference* (S. 0646–0650). IEEE. https://ieeexplore.ieee.org/abstract/document/8650241/
 
 LeCun, Y., Bottou, L., Bengio, Y., & Haffner, P. (1998). Gradient-based learning applied to document recognition. *Proceedings of the IEEE, 86*(11), 2278–2324.
+
+
+Sandler, M., Howard, A., Zhu, M., Zhmoginov, A., & Chen, L.-C. (2018). MobileNetV2: Inverted residuals and linear bottlenecks. In *Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition (CVPR)*.
 
 Shorten, C., & Khoshgoftaar, T. M. (2019). A survey on image data augmentation for deep learning. *Journal of Big Data, 6*(1), 60. https://doi.org/10.1186/s40537-019-0197-0
 
