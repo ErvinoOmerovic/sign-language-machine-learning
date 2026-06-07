@@ -127,50 +127,58 @@ Die finale Evaluation erfolgt auf externen Testdaten, die nicht im Training verw
 
 ## 5. Ergebnisse und Erkenntnisse
 
-### 5.1 Übersicht der Evaluationsmetriken
+### 5.1 Übersicht der Evaluationsmetriken (aktuellste Logs)
 
-Die finale externe Evaluation liefert folgende Gesamtmetriken:
+Die finale externe Evaluation (neuester Classification Report: `logs/classification_reports/classification_report_2026-06-06_23-17-23.txt`) liefert folgende Gesamtmetriken:
 
 | Metrik | Wert |
 |---|---:|
-| Accuracy | 0.9171 |
-| Precision | 0.9204 |
-| Recall | 0.9171 |
-| F1-Score | 0.9174 |
+| Accuracy | 0.9257 |
+| Precision | 0.9281 |
+| Recall | 0.9257 |
+| F1-Score | 0.9259 |
 | Test-Support | 1400 Bilder |
 
-Die externe Accuracy von 0.9171 zeigt, dass das Modell rund 91,7 % der externen Testbilder korrekt klassifiziert hat. Die ähnlichen Werte bei Precision, Recall und F1-Score deuten darauf hin, dass die Gesamtleistung über die betrachteten Klassen hinweg relativ ausgewogen ist.
+Die externe Accuracy von 0.9257 zeigt, dass das Modell nun rund 92.6 % der externen Testbilder korrekt klassifiziert. Die leicht verbesserten Werte bei Precision und F1 gegenüber der vorher dokumentierten Evaluation deuten auf eine insgesamt bessere Generalisierung auf das externe Test-Set hin.
 
-### 5.2 Trainingsverlauf
+### 5.2 Trainingsverlauf (aktuelle Trainingskurven)
 
-![Trainings- und Validierungsverlauf](report_assets/training_curves.png)
+![Trainings- und Validierungsverlauf](logs/training_curves/training_curves_2026-06-06_19-45-28.png)
 
-*Abbildung 1: Verlauf von Accuracy und Loss während des Trainings.*
+*Abbildung 1: Verlauf von Accuracy und Loss während des Trainings (neueste Kurve: `logs/training_curves/training_curves_2026-06-06_19-45-28.png`).*
 
-Der Trainingsverlauf zeigt eine schnelle Verbesserung in den ersten Epochen und anschließend eine Stabilisierung auf hohem Niveau. Die höchste Validierungsgenauigkeit lag bei 0.9875. Am Ende des Trainings betrug die Validierungsgenauigkeit 0.9851 und die Trainingsgenauigkeit 0.9963. Der Abstand zwischen Trainings- und Validierungswerten bleibt moderat, was auf ein insgesamt stabiles Training hindeutet.
+Der Trainingsverlauf zeigt eine schnelle Verbesserung in den ersten Epochen und anschließende Stabilisierung auf sehr hohem Niveau. Aus den Epoch-Metriken (`logs/training_metrics/epoch_metrics_2026-06-06_19-45-28.csv`) ergibt sich:
 
-### 5.3 Ergebnisse pro Klasse
+- Maximale Validierungsgenauigkeit (best epoch): 0.9886
+- Validierungsgenauigkeit am Ende der aufgezeichneten Epochen: 0.9883
+- Trainingsgenauigkeit (letzte Epoche): ca. 0.9983
+
+Diese Zahlen zeigen ein starkes Training mit sehr hoher Trainingsgenauigkeit und ebenfalls sehr guter Validierungsleistung (höchste Val-Accuracy ≈ 98.86 %), was auf ein gut konvergiertes Modell hindeutet. Die Differenz zwischen Trainings- und Validierungswerten bleibt gering.
+
+### 5.3 Ergebnisse pro Klasse (aktuell)
+
+Aus dem neuesten Classification Report (`logs/classification_reports/classification_report_2026-06-06_23-17-23.txt`) ergeben sich die folgenden per-Klasse-Metriken (Support = 175 pro Klasse):
 
 | Klasse | Precision | Recall | F1-Score | Support |
 |---|---:|---:|---:|---:|
-| A | 0.95 | 0.89 | 0.91 | 175 |
-| B | 0.99 | 0.98 | 0.98 | 175 |
-| C | 0.92 | 0.99 | 0.95 | 175 |
-| L | 0.87 | 0.91 | 0.89 | 175 |
-| V | 0.93 | 0.88 | 0.91 | 175 |
-| W | 0.91 | 0.89 | 0.90 | 175 |
-| O | 0.97 | 0.87 | 0.92 | 175 |
-| Y | 0.82 | 0.94 | 0.87 | 175 |
+| A | 0.95 | 0.90 | 0.92 | 175 |
+| B | 0.96 | 0.98 | 0.97 | 175 |
+| C | 0.96 | 0.97 | 0.97 | 175 |
+| L | 0.90 | 0.91 | 0.91 | 175 |
+| V | 0.94 | 0.89 | 0.91 | 175 |
+| W | 0.92 | 0.89 | 0.90 | 175 |
+| O | 0.96 | 0.90 | 0.93 | 175 |
+| Y | 0.83 | 0.96 | 0.89 | 175 |
 
-Die per-Klasse-Ergebnisse zeigen, dass die Klassen B und C besonders zuverlässig erkannt werden. Die Klasse Y weist dagegen eine niedrigere Precision auf. Dies bedeutet, dass andere Klassen häufiger fälschlich als Y vorhergesagt werden. Die Klasse O zeigt eine hohe Precision, aber einen niedrigeren Recall, wodurch echte O-Bilder teilweise anderen Klassen zugeordnet werden.
+Die per-Klasse-Ergebnisse zeigen weiterhin, dass die Klassen B und C besonders zuverlässig erkannt werden. Interessant ist die sehr hohe Recall-Rate für Y (0.96) bei gleichzeitig niedrigerer Precision (0.83), was darauf hinweist, dass echte Y-Bilder sehr selten übersehen, aber häufiger durch andere Klassen falsch vorhergesagt werden.
 
-### 5.4 Confusion Matrix
+### 5.4 Confusion Matrix (aktuell)
 
-![Confusion Matrix der externen Evaluation](report_assets/confusion_matrix_external_evaluation.png)
+![Confusion Matrix der externen Evaluation](logs/confusion_matrices/confusion_matrix_2026-06-06_23-17-23.png)
 
-*Abbildung 2: Confusion Matrix der externen Evaluation.*
+*Abbildung 2: Confusion Matrix der externen Evaluation (neueste: `logs/confusion_matrices/confusion_matrix_2026-06-06_23-17-23.png`).*
 
-Die Confusion Matrix zeigt, welche Klassen korrekt erkannt und welche miteinander verwechselt wurden. Die starke Diagonale verdeutlicht, dass der Großteil der Bilder korrekt klassifiziert wurde. Werte außerhalb der Diagonalen weisen auf Fehlklassifikationen hin und helfen dabei, problematische Klassen gezielt zu identifizieren.
+Die Confusion Matrix bestätigt die per-Klasse-Metriken: die Diagonale ist stark ausgeprägt (hohe Trefferraten), während einige Off-Diagonal-Werte zeigen, welche Klassen häufiger verwechselt werden (z. B. leichte Verwechslungen zugunsten von Y in bestimmten Fällen).
 
 ### 5.5 Datenverteilung nach Bereinigung
 

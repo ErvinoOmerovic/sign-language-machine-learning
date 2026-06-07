@@ -1,316 +1,277 @@
-# Gebärdensprachen-Buchstaben Erkennung 🤟
+# Gebärdensprachen-Buchstaben-Erkennung mit Machine Learning
 
-Dieses Projekt implementiert ein Machine-Learning-Modell zur Erkennung von Gebärdensprachen-Buchstaben in Echtzeit über eine Webcam.
+Dieses Projekt implementiert ein Machine-Learning-System zur Erkennung ausgewählter Gebärdensprachen-Buchstaben. Ziel ist es, ein CNN-basiertes Modell zu trainieren, zu evaluieren und anschließend für eine einfache Echtzeit-Erkennung über die Webcam nutzbar zu machen.
+
+Das Projekt wurde im Rahmen eines Machine-Learning-Moduls umgesetzt und umfasst den gesamten Ablauf von der Datenbeschaffung über Datenbereinigung, Training und Evaluation bis hin zur praktischen Webcam-Anwendung.
+
+> Hinweis: Diese README dient als technische Übersicht und Einstieg in das Projekt. Der vollständige wissenschaftliche Bericht bzw. das Portfolio befindet sich in der Datei `report.md`.
+
+## Projektziel
+
+Das Ziel des Projekts besteht darin, ausgewählte Gebärdensprachen-Buchstaben automatisiert anhand von Bild- und Webcam-Daten zu klassifizieren. Dafür wird ein CNN-basiertes Modell mit Transfer Learning eingesetzt. Die Modellleistung wird anhand geeigneter Evaluationsmetriken wie Accuracy, Precision, Recall, F1-Score und Confusion Matrix bewertet.
 
 ## Unterstützte Klassen
 
-A, B, C, L, V, W, O, Y
+Das Modell unterscheidet aktuell acht ausgewählte Klassen:
 
----
+```text
+A, B, C, L, O, V, W, Y
+```
 
-## 🚀 Features
+Die Beschränkung auf acht Klassen dient einer kontrollierten Projektumsetzung und ermöglicht eine gezielte Analyse der Modellleistung.
 
+## Projektüberblick
+
+Das Projekt besteht aus folgenden zentralen Bestandteilen:
+
+- Datenbeschaffung aus externen Quellen
+- Datenbereinigung und Qualitätssicherung
+- Training eines CNN-basierten Klassifikationsmodells
+- Evaluation auf externen Testdaten
+- Visualisierung der Ergebnisse
 - Echtzeit-Erkennung über Webcam
-- Bild-Preprocessing Pipeline
-- CNN-basiertes Modell (TensorFlow / Keras)
-- Debugging-Tools zur Analyse von Trainingsdaten
+- wissenschaftlicher Projektbericht
 
----
+## Projektstruktur
 
-## ⚙️ Installation
-
-```bash
-python -m venv .venv
-source .venv/bin/activate   # macOS / Linux
-# Windows: .venv\Scripts\activate
-
-pip install -r requirements.txt
-```
-
----
-
-## 📁 Projektstruktur
-
-```
+```text
 project/
-├── data_raw/            # Rohdaten (nicht im Repo)
-├── data_cleaned/        # Vorverarbeitete Daten (nicht im Repo)
-├── external_test/       # Externer Testdatensatz (nicht im Repo)
-├── models/              # Gespeicherte Modelle (Das aktuellste Model ist im Repo enthalten)
-├── logs/                # Trainingslogs
-│   ├── classification_reports/  # Classification Reports
-│   ├── confusion_matrices/      # Confusion Matrices
-│   ├── training_metrics/        # Epoch-Metriken (CSV)
-│   ├── training_curves/         # Trainingskurven (PNG)
-│   ├── data_analysis/           # Datenanalyse (Plots)
-│   └── cleaning_logs/           # Cleaning-Logs (TXT)
-├── preprocess.py
-├── train_simple.py
-├── train.py
+├── data_raw/              # Rohdaten für das Training (nicht im Repository)
+├── data_cleaned/          # Bereinigte Trainingsdaten (nicht im Repository)
+├── data_downloads/        # Lokale Downloads der Datensätze (nicht im Repository)
+├── external_test/         # Externe Testdaten (nicht im Repository)
+├── logs/                  # Lokal erzeugte Trainings- und Evaluationslogs
+├── models/                # Gespeichertes finales Modell
+├── report_assets/         # Abbildungen für den Projektbericht
+├── analyze_distribution.py
+├── clean_dataset.py
+├── data_loader.py
 ├── evaluate.py
 ├── predict_webcam.py
-├── utils.py
+├── preprocess.py
+├── setup_data.py
+├── setup_environment.py
+├── train.py
+├── train_simple.py
 ├── requirements.txt
 ├── report.md
 └── README.md
 ```
 
----
+Hinweis: Große Datensätze und lokale Logs werden nicht im Repository mitgeführt, um die Repository-Größe gering zu halten. Die für den Bericht relevanten Abbildungen befinden sich im Ordner `report_assets/`.
 
-## 📦 Dataset
+## Installation
 
-Für das Training und die Evaluation des Modells werden externe Datensätze verwendet.
-
-⚠️ Die Datensätze sind **nicht im Repository enthalten** und müssen manuell heruntergeladen werden.
-
----
-
-### 🔹 Empfohlene Datensätze
-
-#### 1. ASL Alphabet Dataset (Kaggle)
-
-👉 https://www.kaggle.com/datasets/debashishsau/aslamerican-sign-language-aplhabet-dataset
-
-- Enthält Bilder des amerikanischen Gebärdensprachen-Alphabets  
-- Struktur: Bilder sind bereits in Klassenordnern organisiert (z. B. A, B, C, …) :contentReference[oaicite:0]{index=0}  
-- Bilder werden u.a. als Datenaugmentierung verwendet, um die Modellrobustheit zu verbessern (Hintergrund zu sehen, Mensch zu sehen, nicht nur die Hand)
-
----
-
-#### 2. ASL Dataset (Zenodo)
-
-👉 https://zenodo.org/records/14635573
-
-- Enthält farbige (RGB) Bilder von Handgesten für das Alphabet  
-- Fokus auf Finger- und Gelenkpositionen für präzisere Erkennung :contentReference[oaicite:1]{index=1}  
-- Gut geeignet für Experimente und Modellverbesserung
-
----
-
-## 📁 Verwendung im Projekt
-
-Die Datensätze werden **nicht automatisch** geladen. Für den manuellen Import gibt es das Skript:
+### 1. Repository klonen
 
 ```bash
-python setup_data.py
+git clone <repository-url>
+cd <repository-name>
 ```
 
-Das Skript:
-- lädt die definierten Kaggle- und Zenodo-Datensätze manuell herunter
-- entpackt die Archive lokal
-- übernimmt nur die Klassen `A, B, C, L, O, V, W, Y`
-- schreibt Trainingsdaten nach `data_raw/`
-- schreibt externe Testdaten nach `external_test/dataset2/` und `external_test/dataset3/`
-- überspringt bereits importierte Daten standardmäßig
-- lädt mit `--force` die betreffenden Datensätze neu
-
-### Manuelle Nutzung
-
-Alle Datensätze:
+### 2. Virtuelle Umgebung erstellen
 
 ```bash
-python setup_data.py
+python -m venv .venv
+source .venv/bin/activate
 ```
 
-Nur ausgewählte Datensätze:
+Für Windows:
 
 ```bash
-python setup_data.py --datasets kaggle_asl_2 zenodo_asl
+.venv\Scripts\activate
 ```
 
-Nur prüfen, ohne Dateien zu ändern:
+### 3. Abhängigkeiten installieren
 
 ```bash
-python setup_data.py --dry-run
+pip install -r requirements.txt
 ```
 
-Erneut herunterladen und bereits importierte Dateien dieses Skripts ersetzen:
+## Schnellstart: Webcam-Erkennung
 
-```bash
-python setup_data.py --force
-```
-
-### Voraussetzungen für Kaggle
-
-- Kaggle CLI installiert: `pip install kaggle`
-- Auth-Datei vorhanden unter `~/.kaggle/kaggle.json`
-
-Wenn die Authentifizierung fehlt, beendet sich das Skript mit einer verständlichen Fehlermeldung.
-
-### Zielstruktur
-
-```
-data_raw/
-├── A/
-├── B/
-├── C/
-├── L/
-├── O/
-├── V/
-├── W/
-└── Y/
-
-external_test/
-├── dataset2/
-│   ├── A/
-│   ├── B/
-│   ├── C/
-│   ├── L/
-│   ├── O/
-│   ├── V/
-│   ├── W/
-│   └── Y/
-└── dataset3/
-    ├── A/
-    ├── B/
-    ├── C/
-    ├── L/
-    ├── O/
-    ├── V/
-    ├── W/
-    └── Y/
-```
-
-### Beispiel Summary
-
-```text
-========================================================================
-SETUP DATA SUMMARY
-========================================================================
-kaggle_asl_1: ERFOLG
-  Quelle: Kaggle ASL Dataset 1
-  Training nach data_raw/: 1880 Dateien
-  Verteilung: {"A": 235, "B": 235, "C": 235, "L": 235, "O": 235, "V": 235, "W": 235, "Y": 235}
-  Validierung: Training validiert: 1880 Dateien in data_raw
-
-kaggle_asl_2: ERFOLG
-  Quelle: Kaggle ASL Dataset 2
-  Training nach data_raw/: 1600 Dateien
-  Verteilung: {"A": 200, "B": 200, "C": 200, "L": 200, "O": 200, "V": 200, "W": 200, "Y": 200}
-  Test nach external_test/dataset2/: 640 Dateien
-  Verteilung: {"A": 80, "B": 80, "C": 80, "L": 80, "O": 80, "V": 80, "W": 80, "Y": 80}
-  Validierung: Training validiert: 1600 Dateien in data_raw
-  Validierung: Test validiert: 640 Dateien in external_test/dataset2
-
-zenodo_asl: ERFOLG
-  Quelle: Zenodo ASL Dataset
-  Test nach external_test/dataset3/: 800 Dateien
-  Verteilung: {"A": 100, "B": 100, "C": 100, "L": 100, "O": 100, "V": 100, "W": 100, "Y": 100}
-  Validierung: Test validiert: 800 Dateien in external_test/dataset3
-
-Logdatei: logs/setup_data.log
-```
-
-
-## 🧠 Training
-
-### Einfaches Training (empfohlen)
-
-```bash
-python train_simple.py
-```
-
-Das trainierte Modell wird gespeichert unter:
-
-```
-models/sign_language_model.h5
-```
-
-Hinweis: Das Repository kann die kanonische, aktuellste Modell-Datei `models/sign_language_model.h5` enthalten, sodass Nutzer das Projekt nach dem Klonen direkt verwenden können. Zeitgestempelte Checkpoints (z. B. `models/sign_language_model_YYYY-MM-DD_hh-mm-ss.h5`) werden weiterhin ignoriert, um die Repository-Größe zu begrenzen.
-
-
-## 📊 Evaluation
-
-Nach dem Training werden alle relevanten Metriken automatisch berechnet und in den Logs gespeichert.
-
-👉 Es ist **kein separates Skript erforderlich**.
-
-Die Ergebnisse findest du in:
-
-```
-logs/
-```
-
-Dort enthalten:
-- Accuracy
-- Confusion Matrix
-- weitere Trainingsmetriken
-
----
-
-## 🎥 Webcam Prediction
-
-Starte die Echtzeit-Erkennung:
+Wenn das trainierte Modell im Ordner `models/` enthalten ist, kann die Webcam-Erkennung direkt gestartet werden:
 
 ```bash
 python predict_webcam.py
 ```
 
-### Controls
+Das Skript lädt das gespeicherte Modell, öffnet die Webcam und zeigt die erkannte Klasse direkt im Kamerafenster an.
+
+### Steuerung der Webcam-Anwendung
 
 | Taste | Funktion |
-|------|--------|
-| q | Beenden |
-| s | Frame speichern |
-| f | Flip toggeln |
+|---|---|
+| `q` | Programm beenden |
+| `s` | aktuellen Frame speichern |
+| `f` | horizontales Spiegeln aktivieren/deaktivieren |
 
+## Trainiertes Modell
 
-## 📄 Bericht
+Das finale Modell soll unter folgendem Pfad liegen:
 
-Der wissenschaftliche Bericht befindet sich in:
-
+```text
+models/sign_language_model.h5
 ```
-report.md
+
+Wenn diese Datei im Repository enthalten ist, muss das Modell nach dem Klonen nicht erneut trainiert werden. Ein erneutes Training ist nur erforderlich, wenn neue Trainingsdaten verwendet oder ein neues Modell erzeugt werden soll.
+
+Falls das Modell nicht vorhanden ist, kann es über den Trainingsprozess neu erstellt werden.
+
+## Datenquellen
+
+Für Training und Evaluation werden externe Datensätze verwendet. Die Datensätze sind aus Speicher- und Lizenzgründen nicht vollständig im Repository enthalten.
+
+Verwendete Quellen:
+
+1. ASL Alphabet Dataset (Kaggle)  
+   https://www.kaggle.com/datasets/debashishsau/aslamerican-sign-language-aplhabet-dataset
+
+2. ASL Dataset (Zenodo)  
+   https://zenodo.org/records/14635573
+
+3. Synthetic ASL Alphabet Dataset (Kaggle)  
+   https://www.kaggle.com/datasets/lexset/synthetic-asl-alphabet
+
+Aus den Datensätzen werden ausschließlich die Klassen `A`, `B`, `C`, `L`, `O`, `V`, `W` und `Y` verwendet.
+
+## Datensätze einrichten
+
+Für den automatisierten Datenimport steht das Skript `setup_data.py` zur Verfügung.
+
+```bash
+python setup_data.py
 ```
 
----
+Das Skript lädt beziehungsweise verarbeitet die definierten Datensätze und legt die Daten in der vorgesehenen Projektstruktur ab.
 
-## 🧠 Technologien
+### Voraussetzungen für Kaggle
 
-- Python
-- TensorFlow / Keras
-- OpenCV
-- NumPy
+Für Kaggle-Datensätze wird die Kaggle CLI benötigt:
 
----
+```bash
+pip install kaggle
+```
 
-⚠️ Hinweis
+Zusätzlich muss eine Kaggle-API-Datei vorhanden sein:
 
-Folgende Inhalte sind bewusst **nicht im Repository enthalten**:
+```text
+~/.kaggle/kaggle.json
+```
 
-- Datensätze (`data_raw`, `data_cleaned`, `external_test`)
-- Zeitgestempelte Modell-Checkpoints (historische `models/sign_language_model_*.h5` Dateien)
-- virtuelle Umgebung (`.venv`)
+Diese Datei enthält den persönlichen Kaggle API Key und darf nicht in das Repository hochgeladen werden.
 
-Diese Einträge sind in `.gitignore` definiert. Die kanonische, aktuellste Modell-Datei `models/sign_language_model.h5` kann hingegen dem Repository beigefügt werden, damit das Projekt nach dem Klonen sofort nutzbar ist.
+## Datenbereinigung
 
----
-
-## 🧹 Datenbereinigung
-
-Bereinigt Rohdaten aus `data_raw/` und erstellt automatisch eine Datenverteilungs-Analyse:
+Vor dem Training können die Rohdaten mit folgendem Skript bereinigt werden:
 
 ```bash
 python clean_dataset.py
 ```
 
-**Features:**
-- Duplikat-Erkennung
-- Unschärfe-Filterung
-- Kaputte Bilder entfernen
-- Extrem schlechte Bilder filtern
-- **Automatische Datenanalyse** mit Diagrammen und Statistiken
+Die Datenbereinigung umfasst unter anderem:
 
-**Output:**
-- Bereinigte Bilder in `data_cleaned/`
-- Analyse-Diagramm: `logs/data_analysis/data_distribution_TIMESTAMP.png`
-- Analyse-Tabelle: `logs/data_analysis/data_distribution_TIMESTAMP.txt`
+- Erkennung und Entfernung von Duplikaten
+- Filterung unscharfer Bilder
+- Entfernung beschädigter oder nicht lesbarer Dateien
+- Filterung extremer Bildinhalte
+- Erstellung von Datenverteilungsanalysen
 
----
+Die bereinigten Daten werden in `data_cleaned/` gespeichert und dienen als Grundlage für das Training.
 
-## 🚀 Zukunft / Erweiterungen
+## Training
 
-- Unterstützung für das komplette Alphabet
-- Verbesserung der Modellgenauigkeit
-- Deployment als Web-App (Flask / FastAPI)
-- Mobile Integration
+Das empfohlene Trainingsskript lautet:
+
+```bash
+python train_simple.py
+```
+
+Das Skript trainiert das Modell auf den bereinigten Daten und speichert das resultierende Modell im Ordner `models/`.
+
+Der stabile Modellpfad für die spätere Nutzung lautet:
+
+```text
+models/sign_language_model.h5
+```
+
+## Evaluation
+
+Die Evaluation kann über folgendes Skript durchgeführt werden:
+
+```bash
+python evaluate.py
+```
+
+Dabei werden die Modellmetriken berechnet und eine Confusion Matrix erzeugt. Die wichtigsten im Projektbericht verwendeten Abbildungen werden im Ordner `report_assets/` bereitgestellt, damit sie im Repository sichtbar und im Bericht korrekt eingebunden sind.
+
+Bewertete Metriken:
+
+- Accuracy
+- Precision
+- Recall
+- F1-Score
+- Confusion Matrix
+
+## Projektbericht
+
+Der wissenschaftliche Projektbericht befindet sich in:
+
+```text
+report.md
+```
+
+Die im Bericht verwendeten Abbildungen befinden sich in:
+
+```text
+report_assets/
+```
+
+Dazu gehören insbesondere:
+
+- Trainings- und Validierungsverlauf
+- Confusion Matrix der externen Evaluation
+- Datenverteilung nach der Bereinigung
+
+## Reproduzierbarkeit
+
+Das Projekt ist so aufgebaut, dass zentrale Schritte nachvollziehbar ausgeführt werden können:
+
+1. Datensätze einrichten
+2. Rohdaten bereinigen
+3. Modell trainieren
+4. Modell evaluieren
+5. Webcam-Erkennung starten
+
+Die lokalen Logs und großen Datensätze werden nicht vollständig versioniert. Relevante Ergebnisabbildungen für den Bericht werden jedoch im Ordner `report_assets/` bereitgestellt.
+
+## Hinweise zum Repository
+
+Folgende Inhalte sind bewusst nicht Bestandteil des Repositorys:
+
+- vollständige Rohdatensätze
+- bereinigte Trainingsdaten
+- lokale Download-Archive
+- lokale Trainingslogs
+- virtuelle Umgebung `.venv/`
+- Cache-Dateien wie `__pycache__/`
+
+Das finale Modell kann im Ordner `models/` mitgeführt werden, damit die Webcam-Demo nach dem Klonen direkt nutzbar ist.
+
+## Technologien
+
+- Python
+- TensorFlow / Keras
+- OpenCV
+- NumPy
+- scikit-learn
+- Matplotlib
+- Pillow
+
+## Mögliche Erweiterungen
+
+- Erweiterung auf das vollständige Gebärdensprachen-Alphabet
+- Verbesserung der Robustheit bei unterschiedlichen Lichtverhältnissen
+- Integration einer Handsegmentierung
+- Erweiterung zu einer Web-Anwendung
+- Optimierung für mobile Geräte
