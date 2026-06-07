@@ -259,6 +259,10 @@ def main():
         if not ret:
             break
 
+        # ========== Flip anwenden wenn aktiviert ==========
+        if flip_flag[0]:
+            frame = cv2.flip(frame, 1)  # Horizontales Flip
+
         # ========== Hand-Erkennung ==========
         bbox = detect_hand_bbox(frame)
         mediapipe_active_now = bbox is not None
