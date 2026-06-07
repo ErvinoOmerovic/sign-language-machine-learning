@@ -62,6 +62,12 @@ Hinweis: Große Datensätze und lokale Logs werden nicht im Repository mitgefüh
 
 ## Installation
 
+## Python-Interpreter auswählen
+
+Für das Projekt sollte in PyCharm die Conda-Umgebung `ml_train` als Python-Interpreter ausgewählt werden. Wichtig ist, dass die Abhängigkeiten aus `requirements.txt` in genau dieser Umgebung installiert wurden.
+
+Falls PyCharm eine andere Python-Version verwendet, kann dies unter `Settings → Project → Python Interpreter` angepasst werden. Nach der Auswahl sollte unten rechts in PyCharm `ml_train` angezeigt werden.
+
 ### 1. Repository klonen
 
 ```bash
